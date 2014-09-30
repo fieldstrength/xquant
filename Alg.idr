@@ -58,11 +58,11 @@ sTimes : sInt -> sInt -> sInt
 sTimes (SInt a x) (SInt b y) = SInt (xor a b) (x * y)
 
 instance Num sInt where
-  (+) = sPlus
-  (-) x y = sPlus x $ opp y
-  (*) = sTimes
+  (+)            = sPlus
+  (-) x y        = sPlus x $ opp y
+  (*)            = sTimes
   abs (SInt b x) = (SInt False x)
-  fromInteger i = let n = abs i in let b = (i < 0) in SInt b (fromIntegerNat n)
+  fromInteger i  = let n = abs i in let b = (i < 0) in SInt b (fromIntegerNat n)
 
 instance Num cInt where
   (+) (a :+ b) (c :+ d) = (a+c) :+ (b+d)
@@ -102,25 +102,6 @@ Cmi = s0 :+ sm1
 C0 : cInt
 C0 = s0 :+ s0
 
-{-
-partial
-matrixView : Matrix n n cInt -> Vect n String
-matrixView m = map (\s => "[ " ++ s ++ " ]") (mViewer m) where
-  dispLength : Vect n cInt -> Nat
-  dispLength Nil       = Z
-  dispLength [c]       = length (show c)
-  dispLength (c :: cs) = if length (show c) > (dispLength cs) then length (show c) else (dispLength cs)
-  spacer : Nat -> String
-  spacer Z     = ""
-  spacer (S k) = " " ++ (spacer k)
-  disper : Vect n cInt -> Vect n String
-  disper v = let l = dispLength v in map (\c => show c ++ (spacer $ l - (length (show c)))) v
-  partial
-  mViewer : Matrix m n cInt -> Vect n String
-  mViewer [v] = disper v
-  mViewer (v :: vs) = zipWith (++) (disper v) (map (\s => ", " ++ s) $ mViewer vs)
--}
-
 -------------------------------------------------------------------------------------------
 --                                   Lie algebra stuff
 -------------------------------------------------------------------------------------------
@@ -139,47 +120,3 @@ instance Eq (Lie n) where
 lieI : Vect n cInt -> Lie n
 lieI Nil       = lZ
 lieI (c :: cs) = lS c $ lieI cs
-
---data xType = 
-
---data LieAlg : (n : Nat) -> 
-
-
--- [L_i, L_j] = i F_{ijk} L_k
-
--- σ1 σ2 = i e_{12k} σk = i σ3
--- 
--- conditions:
--- 1) Bilinearity
--- 2) Alternating: [Li, Li] = 0
--- 3) Jacobi:      [x,[y,z]] + [y,[z,x]] + [z,[x,y]] = 0
---          eller: f_{ade}f_{bcd} + 
-
-
-{-}
-infixl 3 ~*
-(~*) : LieElem -> LieElem -> LieElem
-(Lie l1) (Lie l2) ?= {Alg_Plus_Lemma} Lie $ zipWith (+) l1 l2
-
-LieStructure : Nat -> Type
-LieStructure n = Matrix n n LieElem
--}
-
---LieApply : LieStructure n -> LieElem -> LieElem
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
---http://breedtv.com/walt-disney-salvador-dali-destino-2003
