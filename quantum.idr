@@ -1,4 +1,0 @@
-
-module quantum
-
-import Kets
