@@ -1,22 +1,26 @@
 
-module Matrices
+module Matrix
 
-infixl 1 \+\  -- Vector plus  (V begins with \)
-infixl 1 /+/  -- Matrix plus  (M begins with /)
+
+%default total
+
+
+infixl 1 \+\  -- Vector plus  (mnemonic: V begins with '\')
+infixl 1 /+/  -- Matrix plus  (          M begins with '/')
 infixl 1 \-\  -- Vector minus
 infixl 1 /-/  -- Matrix minus
-infixr 2 <.>
-infixr 2 <<>>
-infixr 2 >><<
-infixr 4 </>
-infixr 5 <>
-infixr 7 <&>
-infixr 7 \&\
+infixr 2 <.>  -- Vector dot product
+infixr 2 <<>> -- Matrix commutator
+infixr 2 >><< -- Matrix anticommutator
+infixl 3 <\>  -- row times a matrix
+infixr 4 </>  -- matrix times a collumn
+infixr 5 <>   -- matrix multiplication 
+infixr 7 \&\  -- vector tensor product
+infixr 7 <&>  -- matrix tensor product
 
--------------------------------------------------------------------------------------------
---                                      Vector Stuff
--------------------------------------------------------------------------------------------
-
+---------------------------------------------------------------
+--                      Vector Stuff
+---------------------------------------------------------------
 
 ||| Dot product between numerical vectors
 (<.>) : Num a => Vect n a -> Vect n a -> a
@@ -26,23 +30,15 @@ infixr 7 \&\
 scale : Num a => Vect n a -> a -> Vect n a
 scale v s = map (* s) v
 
-||| Make an n-dimensional vector from a function of Fin-n
-vectorMaker : {n : Nat} -> (Fin n -> a) -> Vect n a
-vectorMaker {n} f = map f (allN n) where
-  allN : (n : Nat) -> Vect n (Fin n)
-  allN Z     = Nil
-  allN (S n) = fZ :: (map fS $ allN n)
-
 ||| Vector addition
-Vector.(\+\) : Num a => Vect n a -> Vect n a -> Vect n a
-Vector.(\+\) v w = zipWith (+) v w
+(\+\) : Num a => Vect n a -> Vect n a -> Vect n a
+(\+\) v w = zipWith (+) v w
 
 ||| Vector subtraction
-Vector.(\-\) : Num a => Vect n a -> Vect n a -> Vect n a
-Vector.(\-\) v w = zipWith (-) v w
+(\-\) : Num a => Vect n a -> Vect n a -> Vect n a
+(\-\) v w = zipWith (-) v w
 
-
-||| Tensor product for numerical vectors
+||| Tensor multiply for numerical vectors
 ox : Num a => Vect n a -> Vect m a -> Vect (n * m) a
 ox {n} {m} q w = zipWith (*) (oextend m q) (orep n w) where
   orep : {N : Nat} -> (M : Nat) -> Vect N a -> Vect (M * N) a
@@ -53,12 +49,12 @@ ox {n} {m} q w = zipWith (*) (oextend m q) (orep n w) where
 (\&\) : Num a => Vect n a -> Vect m a -> Vect (n * m) a
 (\&\) = ox
 
+zero : Num a => {n : Nat} -> Vect n a
+zero {n} = replicate n (fromInteger 0)
 
-||| Standard basis vector with one nonzero entry and the numeric typeclass left unfixed
-sBasis : Num a => (n : Nat) -> Nat -> Vect n a
-sBasis n m = reverse $ sbasis n m where
-  sbasis Z     _     = Nil
-  sbasis (S k) (S j) = let s = if j == k then (product Vect.Nil) else (sum Vect.Nil) in s :: (sbasis k (S j))
+||| Standard basis vector with one nonzero entry, numeric typeclass left unfixed
+basis : Num a => {n : Nat} -> (Fin n) -> Vect n a
+basis i = replaceAt i (fromInteger 1) zero
 
 sqNorm : Num a => Vect n a -> a
 sqNorm v = sum $ map ((\x => x*x) . abs) v
@@ -66,34 +62,35 @@ sqNorm v = sum $ map ((\x => x*x) . abs) v
 norm : Vect n Float -> Float
 norm v = prim__floatSqrt $ sqNorm v
 
--------------------------------------------------------------------------------------------
---                                      Matrix Stuff
--------------------------------------------------------------------------------------------
 
+---------------------------------------------------------------
+--                      Matrix Stuff
+---------------------------------------------------------------
 
-||| Matrix with n cols and m rows
+||| Matrix with n rows and m collumns
 Matrix : Nat -> Nat -> Type -> Type
 Matrix n m a = Vect n (Vect m a)
 
 
-||| Gets the specified row of a matrix. For cols use the vector function 'index'
-getRow : Fin m -> Matrix n m a -> Vect n a
-getRow fm q = map (index fm) q
+||| Gets the specified collumn of a matrix. For rows use the vector function 'index'
+getCol : Fin m -> Matrix n m a -> Vect n a
+getCol fm q = map (index fm) q
 
-||| Deletes the specified row of a matrix. For cols use the vector function 'deleteAt'
-deleteRow : Fin (S m) -> Matrix n (S m) a -> Matrix n m a
-deleteRow f m = map (deleteAt f) m
+||| Deletes the specified collumn of a matrix. For rows use the vector function 'deleteAt'
+deleteCol : Fin (S m) -> Matrix n (S m) a -> Matrix n m a
+deleteCol f m = map (deleteAt f) m
 
 ||| Matrix element at specified row and collumn indices
-atRowCol : Fin m -> Fin n -> Matrix n m a -> a
-atRowCol fm fn m = index fm (index fn m)
+atRowCol : Fin n -> Fin m -> Matrix n m a -> a
+atRowCol f1 f2 m = index f2 (index f1 m)
 
+||| Matrix addition
+(/+/) : Num a => Matrix n m a -> Matrix n m a -> Matrix n m a
+(/+/) = zipWith (\+\)
 
-Matrix.(/+/) : Num a => Matrix n m a -> Matrix n m a -> Matrix n m a
-Matrix.(/+/) = zipWith Vector.(\+\)
-
-Matrix.(/-/) : Num a => Matrix n m a -> Matrix n m a -> Matrix n m a
-Matrix.(/-/) = zipWith Vector.(\-\)
+||| Matrix subtraction
+(/-/) : Num a => Matrix n m a -> Matrix n m a -> Matrix n m a
+(/-/) = zipWith (\-\)
 
 
 ||| Numerical matrix times scalar of the appropriate type
@@ -107,41 +104,47 @@ MatScalar.(*) : Num a => Matrix n m a -> a -> Matrix n m a
 MatScalar.(*) m s = mScale s m 
 
 
-||| Matrix times a vector
-(</>) : Num a => Matrix n m a -> Vect n a -> Vect m a
-(</>) m v = vectorMaker (rowApply m v) where
-  rowApply : Num b => {N,M : Nat} -> Matrix N M b -> Vect N b -> Fin M -> b
-  rowApply mat v f = (getRow f mat) <.> v
+||| Matrix times a collumn vector
+(</>) : Num a => Matrix n m a -> Vect m a -> Vect n a
+(</>) m v = map (v <.>) m
 
-||| Matrix multiplication
-(<>) : Num a => Matrix k m a -> Matrix n k a -> Matrix n m a
-(<>) m1 m2 = map ((</>) m1) m2
+||| Matrix times a row vector
+(<\>) : Num a => Vect n a -> Matrix n m a -> Vect m a
+(<\>) r m = map (r <.>) $ transpose m
 
 
-||| Tensor product for numerical matrices
-(<&>) : Num a => Matrix w1 h1 a -> Matrix w2 h2 a -> Matrix (w1 * w2) (h1 * h2) a
+||| Matrix Multiplication
+(<>) : Num a => Matrix n k a -> 
+                Matrix k m a -> 
+                Matrix n m a
+(<>) m1 m2 = map (<\> m2) m1
+
+
+||| Tensor multiply for numerical matrices
+(<&>) : Num a => Matrix h1 w1 a -> Matrix h2 w2 a -> Matrix (h1 * h2) (w1 * w2) a
 (<&>) m1 m2 = zipWith ox (stepOne m1 m2) (stepTwo m1 m2) where
-  stepOne : Matrix w1 h1 a -> Matrix w2 h2 a -> Matrix (w1 * w2) h1 a
-  stepOne {w2} m1 m2 = concat $ map (replicate w2) m1
-  stepTwo : Matrix w1 h1 a -> Matrix w2 h2 a -> Matrix (w1 * w2) h2 a
-  stepTwo {w1} m1 m2 = concat $ (Vect.replicate w1) m2
+  stepOne : Matrix h1 w1 a -> Matrix h2 w2 a -> Matrix (h1 * h2) w1 a
+  stepOne {h2} m1 m2 = concat $ map (replicate h2) m1
+  stepTwo : Matrix h1 w1 a -> Matrix h2 w2 a -> Matrix (h1 * h2) w2 a
+  stepTwo {h1} m1 m2 = concat $ (Vect.replicate h1) m2
 
 
 ||| Cast a vector from a standard Vect to a proper n x 1 matrix 
-col : Num a => Vect n a -> Matrix 1 n a
-col v = [v]
+col : Vect n a -> Matrix n 1 a
+col v = map (\x => [x]) v
 
 ||| Cast a row from a standard Vect to a proper 1 x n matrix 
-row : Num a => Vect n a -> Matrix n 1 a
-row v = map (\x => [x]) v
+row : Vect n a -> Matrix 1 n a
+row r = [r]
 
+||| All finite numbers up to the given bound
+allN : (n : Nat) -> Vect n (Fin n)
+allN Z     = Nil
+allN (S n) = fZ :: (map fS $ allN n)
 
-||| N-dimensional identity matrix for any numeric typeclass
-idN : Num a => (d : Nat) -> Matrix d d a
-idN d = map (\n => sBasis d $ finToNat n) $ allN d where
-  allN : (n : Nat) -> Vect n (Fin n)
-  allN Z     = Nil
-  allN (S n) = fZ :: (map fS $ allN n)
+||| d-dimensional identity matrix for unspecified numeric typeclass
+Id : Num a => {d : Nat} -> Matrix d d a
+Id {d} = map (\n => basis n) $ allN d
 
 
 ||| Matrix Commutator

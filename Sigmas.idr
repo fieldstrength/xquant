@@ -8,13 +8,14 @@ infixr 9 *~
 
 
 -------------------------------------------------------------------------------------------
---                       Data for Sigma Operators  • Complex signs (Phases)
---                                                 • Pauli operators
---                                                 • Higher Sigma operators 
---                                                   (tensor products of Paulis with an overall phase)
+--           Data for Sigma Operators  • Complex signs (Phases)
+--                                     • Pauli operators
+--                                     • Higher Sigma operators 
+--                                        (tensor products of Paulis with an overall phase)
 -------------------------------------------------------------------------------------------
 
--- 4 basic phases, in order: (+1), (+i), (-1), (-i) – encoded with two Bools: (minus sign) (factor of i)
+-- 4 basic phases, in order: (+1), (+i), (-1), (-i) –
+--   encoded with two Bools: (minus sign) (factor of i)
 data Phase = Sign Bool Bool
 
 instance Show Phase where
@@ -65,7 +66,7 @@ instance Show Pauli where
   show SI = "I"
   show SX = "x"
   show SY = "y"
-  show SZ = "z" -- should be "σz", as in Haskell version, but idris only prints 8-bit characters
+  show SZ = "z" -- should be "σz" whene idris can print non-8-bit characters
 
 class LaTeX a where
   TeX : a -> String
@@ -122,10 +123,10 @@ sI = Sig SI $ sPhase P1
 
 
 -------------------------------------------------------------------------------------------
---                      Operations with Sigmas   • Helper functions: getPhase, topPauli, lastPauli, pack
---                                               • Scalar multiply 
---                                               • (Single) Sigma multiply
---                                               • (Higher) Sigma multiply
+--           Operations with Sigmas   • Helper functions: getPhase, topPauli, lastPauli, pack
+--                                    • Scalar multiply 
+--                                    • (Single) Sigma multiply
+--                                    • (Higher) Sigma multiply
 -------------------------------------------------------------------------------------------
 
 -- Extract the Phase, first Pauli or last Pauli from a Sigma

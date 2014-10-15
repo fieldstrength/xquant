@@ -1,5 +1,5 @@
 
-module Kets
+module SigKets
 
 import Sigmas
 import Hilbert
@@ -231,7 +231,7 @@ sx : QubitObs 1
 sx = mScale (0.5 :+ 0) [[c0, c1], [c1, c0]]
 
 sy : QubitObs 1 
-sy = mScale (0.5 :+ 0) [[c0, ci], [cmi, c0]]
+sy = mScale (0.5 :+ 0) [[c0, cmi], [ci, c0]]
 
 sz : QubitObs 1
 sz = mScale (0.5 :+ 0) [[c1, c0], [c0, cm1]]
@@ -272,12 +272,12 @@ zDown = [c0, c1]
 
 -- [single] KetSpin to numeric vector 
 Spin.mat : EigenSpin -> QubitKet 1
-Spin.mat (Eigenspin X Up)   = [xUp]
-Spin.mat (Eigenspin X Down) = [xDown]
-Spin.mat (Eigenspin Y Up)   = [yUp]
-Spin.mat (Eigenspin Y Down) = [yDown]
-Spin.mat (Eigenspin Z Up)   = [zUp]
-Spin.mat (Eigenspin Z Down) = [zDown]
+Spin.mat (Eigenspin X Up)   = col xUp
+Spin.mat (Eigenspin X Down) = col xDown
+Spin.mat (Eigenspin Y Up)   = col yUp
+Spin.mat (Eigenspin Y Down) = col yDown
+Spin.mat (Eigenspin Z Up)   = col zUp
+Spin.mat (Eigenspin Z Down) = col zDown
 
 -- KetSpin n to numeric vector
 Ket.mat : KetSpins n -> QubitKet n

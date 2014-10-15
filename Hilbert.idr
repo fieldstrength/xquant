@@ -22,11 +22,11 @@ Obs n = Matrix n n (Complex Float)
 
 -- n-dimensional Ket vector as a proper n x 1 matrix collumn
 KetSpace : Nat -> Type
-KetSpace n = Matrix 1 n (Complex Float)
+KetSpace n = Matrix n 1 (Complex Float)
 
 -- n-dimensional Bra vector as a proper 1 x n matrix row
 BraSpace : Nat -> Type
-BraSpace n = Matrix n 1 (Complex Float)
+BraSpace n = Matrix 1 n (Complex Float)
 
 
 -- Shorthand for the n-qubit state space, 2^n dimensional Hilbert space 
@@ -39,11 +39,11 @@ QubitObs n = let m = power 2 n in Matrix m m (Complex Float)
 
 -- Shorthand for n-qubit collumn vector matrix type
 QubitKet : Nat -> Type
-QubitKet n = let m = power 2 n in Matrix 1 m (Complex Float)
+QubitKet n = let m = power 2 n in Matrix m 1 (Complex Float)
 
 -- Shorthand for n-qubit row vector matrix type
 QubitBra : Nat -> Type
-QubitBra n = let m = power 2 n in Matrix m 1 (Complex Float)
+QubitBra n = let m = power 2 n in Matrix 1 m (Complex Float)
 
 
 -------------------------------------------------------------------------------------------
@@ -52,8 +52,8 @@ QubitBra n = let m = power 2 n in Matrix m 1 (Complex Float)
 
 -- Normalize
 normalize : StateSpace n -> StateSpace n
-normalize q = let sqnorm = sum $ map ((\x => x*x) . magnitude) q in 
-  map (\(r :+ i) => (r / (sqrt sqnorm)) :+ (i / (sqrt sqnorm))) q 
+normalize q = let sqn = sum $ map ((\x => x*x) . magnitude) q in 
+  map (\(r :+ i) => (r / (sqrt sqn)) :+ (i / (sqrt sqn))) q 
 
 -- Hilbert Inner product – conjugates first argument
 inner : StateSpace n -> StateSpace n -> Complex Float
@@ -70,12 +70,6 @@ dagger h = map (map conjugate) $ transpose h
 bra : StateSpace n -> BraSpace n
 bra v = dagger $ col v
 
-Id : (n : Nat) -> Obs n
-Id n = map ((\m => sBasis n m) . finToNat) (allN n) where
-  allN : (n : Nat) -> Vect n (Fin n)
-  allN Z     = Nil
-  allN (S n) = fZ :: (map fS $ allN n)
-
 Neutral : (n : Nat) -> StateSpace n
 Neutral Z = []
 Neutral (S k) = (1 :+ 0) :: (Neutral k) 
@@ -87,8 +81,8 @@ Neutral (S k) = (1 :+ 0) :: (Neutral k)
 ----------------------------------------------------------------------------------
 
 -- Standard position basis vector
-cbasis : (N : Nat) -> Nat -> StateSpace N
-cbasis n m = sBasis n m 
+cbasis : {n : Nat} -> (Fin n) -> StateSpace n
+cbasis {n} f = basis {n} f
 
 -- Nat to Float conversion, needed below
 natToFloat : Nat -> Float
@@ -103,9 +97,16 @@ pbasis n p = pBasis n n p Z where
   pBasis Z     _ _ _ = Nil
   pBasis (S k) n p x = cis (pi * 2 * (natToFloat $ mult p x) / (natToFloat n)) :: pBasis k n p (S x)
 
+-- Standard Kets and Bras
+sKet : {d : Nat} -> (Fin d) -> KetSpace d
+sKet f = col (cbasis f)
+
+sRow : {d : Nat} -> (Fin d) -> BraSpace d
+sRow f = row (cbasis f)
+
 -- Normalized N-qubit QHZ ket 
 GHZ : (N : Nat) -> QubitKet N
-GHZ k = [normalize $ ghz (power 2 k) (power 2 k)] where
+GHZ k = col $ normalize $ ghz (power 2 k) (power 2 k) where
   ghz : (n : Nat) -> Nat -> StateSpace n
   ghz (S Z) k     = [(1 :+ 0)]
   ghz (S j) (S k) = let s = if j == k then (1 :+ 0) else (0 :+ 0) in s :: (ghz j (S k))
