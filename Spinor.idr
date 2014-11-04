@@ -2,74 +2,103 @@
 module Spinor
 
 import Matrix
-import Hilbert
+import VectorSpace
+import Alg
 
 %default total
 
-
 -- Begin with two primative Gamma matrices, Γ0 and Γ1, generating Spin(2)
--- Define them as both Floating point and symbolic matrices
+-- We define them 'symbolically' with Complex ZZ data type.
 
--- Γ0 = iσy
-Gamma0 : QubitObs 1
-Gamma0 = [[c0, c1], [cm1, c0]]
+|||  Γ0 = iσy
+g0 : Matrix 2 2 (Complex ZZ)
+g0 = [[C0, C1], [Cm1, C0]]
 
--- Γ1 = σx
-Gamma1 : QubitObs 1
-Gamma1 = [[c0, c1], [c1, c0]]
+|||  Γ1 = σx
+g1 : Matrix 2 2 (Complex ZZ)
+g1 = [[C0, C1], [C1, C0]]
 
--- Now construct gammas of for even-dimensional spinor representations (D = 2k + 2) by tensoring as follows:
+{- Construct gammas for even-dimensional spinor representations (D = 2k + 2) 
+   First tensor as follows:
 
---    Gamma^μ    = gamma^mu <&> diag(-1,1)  or equivalently:
---    Gamma^μ    = gamma^mu <&> (Gamma1 <> Gamma0)  (where mu <- [0..D-2] )
---
---    Gamma^{D-1} = Id <&> Γ1    = Id ⊗ σx  
---
---    Gamma^D     = Id <&> -iΓ0  = Id ⊗ σy
+      G^μ    = Γ^mu <&> diag(-1,1),  (where mu <- [0..D-2])  or equivalently,
+      G^μ    = Γ^mu <&> (g1 <> g0)
 
+   Then adding two new gammas:
 
--- Gamma matrices for even dimensions D = 2k + 2, with size 2^(k+1)
-gammaSetEven : (k : Nat) -> Vect (k*2+2) $ Matrix (power 2 (S k)) (power 2 (S k)) (Complex Float)
-gammaSetEven Z      = [Gamma0, Gamma1]
-gammaSetEven (S k) ?= {Gamma_Lemma} map (\g => g <&> (Gamma1 <> Gamma0)) (gammaSetEven k) 
-  ++ [Id <&> Gamma1, Id <&> Gamma0 * cmi]
+      G^{D-1} = Id <&> Γ1    = Id ⊗ σx
+      G^D     = Id <&> -iΓ0  = Id ⊗ σy  -}
 
--- All matrices defined in this way satisy the gamma matrix algebra:
+|||  Gamma matrices for even dimensions D = 2k + 2, with size 2^(k+1)
+gammaEven : (k : Nat) -> Vect (k*2 + 2) $ Matrix (power 2 (S k)) (power 2 (S k)) (Complex ZZ)
+gammaEven Z      = [g0, g1]
+gammaEven (S k) ?= {Lemma_1} map (\g => g <&> (g1 <> g0)) (gammaEven k) ++ [Id <&> g1, Cmi <#> Id <&> g0]
 
---   {Γμ,Γν} = 2 η{μν} Id   (upstairs indices)
+{- Matrices defined in this way satisy the gamma matrix algebra:
 
--- They also furnish Poincaré generators faithfully satisfying: i[Σμν,Σσρ] = ηνσΣμρ + ημρΣνσ − ηνρΣμσ − ημσΣνρ 
---   where Σ^{μν} = −i[Γ^μ,Γ^ν]
--- This holds in any dimensionality and in both Minkowski and Euclidean signatures.
+     {Γμ,Γν} = 2 η{μν} Id   (upstairs indices)
 
+   They also furnish Poincaré generators   Σ^{μν} = −i[Γ^μ,Γ^ν] 
+   satisfying, by definition:   i[Σμν,Σσρ] = ηνσΣμρ + ημρΣνσ − ηνρΣμσ − ημσΣνρ 
+ 
+   This holds in any dimensionality and in both Minkowski and Euclidean signatures.
 
+   Now define the "fifth Gamma Matrix", denoted Γ  -}
 
--- Now define the "fifth Gamma matrix", denoted Γ
-
---   Γ = i^{-k} (Γ^0 ... Γ^{D-1})
-
--- Can form odd-dimensional (irriducible) spinor representations by adding Γ (or -Γ)
-Γ : {k : Nat} -> 
-    Vect (k*2+2) $ Matrix (power 2 $ S k) (power 2 $ S k) (Complex Float) -> 
-    Matrix (power 2 $ S k) (power 2 $ S k) (Complex Float) 
-Γ {k} gs = (gPhase k) * (applyAll gs) where
-  gPhase : Nat -> Complex Float 
-  gPhase Z     = c0
-  gPhase (S n) = cmi * (gPhase n)
-  applyAll : Num t => Vect n (Matrix m m t) -> Matrix m m t
+||| The "fifth gamma matrix" given by
+|||
+||| Γ = i^{–k} (Γ^0 ... Γ^{D-1})
+|||
+||| forms an odd-dimensional (irriducible) spinor representation by adding to the appropriate (gammaEven k)
+gamma : {k : Nat} -> 
+        Vect (k*2+2) $ Matrix (power 2 $ S k) (power 2 $ S k) (Complex ZZ) -> 
+        Matrix (power 2 $ S k) (power 2 $ S k) (Complex ZZ) 
+gamma {k} gs = (gPhase k) <#> (applyAll gs) where
+  gPhase : Nat -> Complex ZZ
+  gPhase Z     = C0
+  gPhase (S n) = Cmi <*> (gPhase n)
+  applyAll : RingWithUnity t => Vect n (Matrix m m t) -> Matrix m m t
   applyAll [m]              = m
   applyAll (m :: (h :: ms)) = applyAll ((m <> h) :: ms)
-  applyAll Nil              = Id  -- only have this case to satisfy totality check
+  applyAll Nil              = Id  -- this here to satisfy totality check
 
--- Γ has eigenvalues of ±1 and satisfies:
+{- Γ has eigenvalues of ±1 and satisfies:
 
---   Γ^2 = 1
---   {Γ,Γ^μ} = 0
---   [Γ,Σ^{μν}] = 0
+     Γ^2 = 1
+     {Γ,Γ^μ} = 0
+     [Γ,Σ^{μν}] = 0  -}
 
 
--- AnticommRelation ...
+||| Anticommutation relation, {Γμ,Γν} = 2 η{μν} Id, for D = 2
+D2_anticommRelation_00 : g0 >><< g0 = (NegS 1 :+ 0) <#> Id
+D2_anticommRelation_00 = Refl
 
+||| Anticommutation relation, {Γμ,Γν} = 2 η{μν} Id, for D = 2
+D2_anticommRelation_01 : g0 >><< g1 = [neutral, neutral]
+D2_anticommRelation_01 = Refl
+
+||| Anticommutation relation, {Γμ,Γν} = 2 η{μν} Id, for D = 2
+D2_anticommRelation_10 : g1 >><< g0 = [neutral, neutral]
+D2_anticommRelation_10 = Refl
+
+||| Anticommutation relation, {Γμ,Γν} = 2 η{μν} Id, for D = 2
+D2_anticommRelation_11 : g1 >><< g1 = (Pos 2 :+ 0) <#> Id
+D2_anticommRelation_11 = Refl
+
+
+
+
+{-  need to prove: 
+otimesMultiLinearLeft : VerifiedRing a => {s : a} -> 
+                                          {u : Matrix n m a} -> 
+                                          {v : Matrix j k a} ->
+                                          (s <#> u) <&> v = u <&> (s <#> v)
+
+otimesMultiLinearRight : VerifiedRing a => {s : a} -> 
+                                           {u : Matrix n m a} -> 
+                                           {v : Matrix j k a} ->
+                                           (s <#> u) <&> v = u <&> (s <#> v)
+--}
 
 ---------- Proofs ----------
 
@@ -95,7 +124,7 @@ plusPlusZero = proof
   rewrite (sym $ plusZeroRightNeutral y)
   trivial
 
-Gamma_Lemma = proof
+Spinor.Lemma_1 = proof
   intros
   rewrite (plusZeroRightNeutral (plus (mult k 2) 2))
   rewrite (sym $ plusSuccRightSucc (plus (mult k 2) 2) 0)
@@ -105,4 +134,3 @@ Gamma_Lemma = proof
   rewrite (multTwoRightPlus (plus (power 2 k) (power 2 k)))
   rewrite (sym $ plusPlusZero (power 2 k) (power 2 k))
   trivial
-

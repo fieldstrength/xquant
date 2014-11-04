@@ -6,44 +6,43 @@ import Data.Complex
 
 
 infixl 3 <|>
-infixr 3 ><
 
 ----------------------------------------------------------------------------------
 --                               Hilbert Space Types
 ----------------------------------------------------------------------------------
 
--- State vector in the n-dimensional complex Hilbert space
-StateSpace : Nat -> Type
-StateSpace n = Vect n (Complex Float)
+||| Type function for state vector in the n-dimensional complex Hilbert space
+StateSpace : Nat -> Type -> Type
+StateSpace n a = Vect n (Complex a)
 
--- n-dimensional quantum observable datatype ~ n x n complex matrices 
-Obs : Nat -> Type
-Obs n = Matrix n n (Complex Float)
+||| n-dimensional quantum observable datatype ~ n x n complex matrices 
+Op : Nat -> Type -> Type
+Op n a = Matrix n n (Complex a)
 
--- n-dimensional Ket vector as a proper n x 1 matrix collumn
-KetSpace : Nat -> Type
-KetSpace n = Matrix n 1 (Complex Float)
+||| n-dimensional ket vector as a proper n x 1 matrix collumn
+KetSpace : Nat -> Type -> Type
+KetSpace n a = Matrix n 1 (Complex a)
 
--- n-dimensional Bra vector as a proper 1 x n matrix row
-BraSpace : Nat -> Type
-BraSpace n = Matrix 1 n (Complex Float)
+||| n-dimensional bra vector as a proper 1 x n matrix row
+BraSpace : Nat -> Type -> Type
+BraSpace n a = Matrix 1 n (Complex a)
 
 
 -- Shorthand for the n-qubit state space, 2^n dimensional Hilbert space 
-Qubit : Nat -> Type
-Qubit n = StateSpace (power 2 n)
+Qubit : Nat -> Type -> Type
+Qubit n a = StateSpace (power 2 n)a 
 
 -- Shorthand for n-qubit statespace observable type
-QubitObs : Nat -> Type
-QubitObs n = let m = power 2 n in Matrix m m (Complex Float)
+QubitOp : Nat -> Type -> Type
+QubitOp n a = let m = power 2 n in Matrix m m (Complex a)
 
 -- Shorthand for n-qubit collumn vector matrix type
-QubitKet : Nat -> Type
-QubitKet n = let m = power 2 n in Matrix m 1 (Complex Float)
+QubitKet : Nat -> Type -> Type
+QubitKet n a = let m = power 2 n in Matrix m 1 (Complex a)
 
 -- Shorthand for n-qubit row vector matrix type
-QubitBra : Nat -> Type
-QubitBra n = let m = power 2 n in Matrix 1 m (Complex Float)
+QubitBra : Nat -> Type -> Type
+QubitBra n a = let m = power 2 n in Matrix 1 m (Complex a)
 
 
 -------------------------------------------------------------------------------------------
@@ -51,38 +50,31 @@ QubitBra n = let m = power 2 n in Matrix 1 m (Complex Float)
 -------------------------------------------------------------------------------------------
 
 -- Normalize
-normalize : StateSpace n -> StateSpace n
+normalize : StateSpace n Float -> StateSpace n Float
 normalize q = let sqn = sum $ map ((\x => x*x) . magnitude) q in 
   map (\(r :+ i) => (r / (sqrt sqn)) :+ (i / (sqrt sqn))) q 
 
--- Hilbert Inner product – conjugates first argument
-inner : StateSpace n -> StateSpace n -> Complex Float
-inner q w = sum $ zipWith (*) (map conjugate q) w
+conjugate : Group a => Complex a -> Complex a
+conjugate (r :+ i) = r :+ inverse i
 
 -- Infix Hilbert inner product
-(<|>) : StateSpace n -> StateSpace n -> Complex Float
-(<|>) = inner
+(<|>) : StateSpace n Float -> StateSpace n Float -> Complex Float
+(<|>) q w = sum $ zipWith (*) (map Complex.conjugate q) w
 
 -- Hermitian conjugate (adjoint) on complex matrices
-dagger : Matrix n m (Complex Float) -> Matrix m n (Complex Float)
-dagger h = map (map conjugate) $ transpose h
+dagger : Group a => Matrix n m (Complex a) -> Matrix m n (Complex a)
+dagger h = map (map Hilbert.conjugate) $ transpose h
 
-bra : StateSpace n -> BraSpace n
+bra : Group a => StateSpace n a -> BraSpace n a
 bra v = dagger $ col v
-
-Neutral : (n : Nat) -> StateSpace n
-Neutral Z = []
-Neutral (S k) = (1 :+ 0) :: (Neutral k) 
-
-
 
 ----------------------------------------------------------------------------------
 --                               State Primatives
 ----------------------------------------------------------------------------------
 
 -- Standard position basis vector
-cbasis : {n : Nat} -> (Fin n) -> StateSpace n
-cbasis {n} f = basis {n} f
+cbasis : {n : Nat} -> (Fin n) -> StateSpace n Float
+cbasis {n} f = basis f
 
 -- Nat to Float conversion, needed below
 natToFloat : Nat -> Float
@@ -91,26 +83,25 @@ natToFloat (S k) = 1.0 + (natToFloat k)
 
 -- Momentum basis
 --   using helper function: pBasis _ n p x  ~  e^(2 π i p x / n) :: ...
-pbasis : (N : Nat) -> Nat -> StateSpace N
+pbasis : (N : Nat) -> Nat -> StateSpace N Float
 pbasis n p = pBasis n n p Z where
-  pBasis : (l : Nat) -> Nat -> Nat -> Nat -> StateSpace l
+  pBasis : (l : Nat) -> Nat -> Nat -> Nat -> StateSpace l Float
   pBasis Z     _ _ _ = Nil
   pBasis (S k) n p x = cis (pi * 2 * (natToFloat $ mult p x) / (natToFloat n)) :: pBasis k n p (S x)
 
 -- Standard Kets and Bras
-sKet : {d : Nat} -> (Fin d) -> KetSpace d
+sKet : (Fin d) -> KetSpace d Float
 sKet f = col (cbasis f)
 
-sRow : {d : Nat} -> (Fin d) -> BraSpace d
+sRow : (Fin d) -> BraSpace d Float
 sRow f = row (cbasis f)
 
 -- Normalized N-qubit QHZ ket 
-GHZ : (N : Nat) -> QubitKet N
+GHZ : (N : Nat) -> QubitKet N Float
 GHZ k = col $ normalize $ ghz (power 2 k) (power 2 k) where
-  ghz : (n : Nat) -> Nat -> StateSpace n
+  ghz : (n : Nat) -> Nat -> StateSpace n Float
   ghz (S Z) k     = [(1 :+ 0)]
   ghz (S j) (S k) = let s = if j == k then (1 :+ 0) else (0 :+ 0) in s :: (ghz j (S k))
-
 
 -------------------------------------------------------------------------------------------
 --                                     Miscellany
@@ -135,3 +126,4 @@ cmi = 0 :+ -1
 
 cm1 : Complex Float
 cm1 = -1 :+ 0
+

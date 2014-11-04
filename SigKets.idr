@@ -227,17 +227,17 @@ Phase.com (Sign True False)  = cm1
 Phase.com (Sign True True)   = cmi
 
 -- Numeric Sigma 1's
-sx : QubitObs 1
-sx = mScale (0.5 :+ 0) [[c0, c1], [c1, c0]]
+sx : QubitOp 1 Float
+sx = map (* (0.5 :+ 0)) [[c0, c1], [c1, c0]]
 
-sy : QubitObs 1 
-sy = mScale (0.5 :+ 0) [[c0, cmi], [ci, c0]]
+sy : QubitOp 1 Float
+sy = map (* (0.5 :+ 0)) [[c0, cmi], [ci, c0]]
 
-sz : QubitObs 1
-sz = mScale (0.5 :+ 0) [[c1, c0], [c0, cm1]]
+sz : QubitOp 1 Float
+sz = map (* (0.5 :+ 0)) [[c1, c0], [c0, cm1]]
 
-si : QubitObs 1
-si = mScale (0.5 :+ 0) [[c1, c0], [c0, c1]]
+si : QubitOp 1 Float
+si = map (* (0.5 :+ 0)) [[c1, c0], [c0, c1]]
 
 -- Pauli to Matrix
 Pauli.mat : Pauli -> QubitObs 1
