@@ -1,9 +1,8 @@
 
 module Spinor
 
-import Matrix
-import VectorSpace
-import Alg
+import Data.Matrix
+import math.Alg
 
 %default total
 

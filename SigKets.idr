@@ -2,7 +2,7 @@
 module SigKets
 
 import Sigmas
-import Hilbert
+import math.Hilbert
 
 
 infixl 3 <\>
@@ -109,29 +109,29 @@ dZ = downZ
 
 -- Single abstract sigma acting on ket
 ObsKet1 : Sigma 1 -> KetSpins 1 -> KetSpins 1
-ObsKet1 (Sig SI $ sPhase p1) (kS (Eigenspin o ud)   (kPhase p2)) = kS (Eigenspin o ud)   (kPhase $ p1 *~ p2)
-ObsKet1 (Sig SX $ sPhase p1) (kS (Eigenspin X Up)   (kPhase p2)) = kS (Eigenspin X Up)   (kPhase $ p1 *~ p2)
-ObsKet1 (Sig SX $ sPhase p1) (kS (Eigenspin X Down) (kPhase p2)) = kS (Eigenspin X Down) (kPhase $ p1 *~ p2 *~ M1)
-ObsKet1 (Sig SX $ sPhase p1) (kS (Eigenspin Y Up)   (kPhase p2)) = kS (Eigenspin Y Down) (kPhase $ p1 *~ p2 *~ Pi)
-ObsKet1 (Sig SX $ sPhase p1) (kS (Eigenspin Y Down) (kPhase p2)) = kS (Eigenspin Y Up)   (kPhase $ p1 *~ p2 *~ P1)
-ObsKet1 (Sig SX $ sPhase p1) (kS (Eigenspin Z Up)   (kPhase p2)) = kS (Eigenspin Z Down) (kPhase $ p1 *~ p2)
-ObsKet1 (Sig SX $ sPhase p1) (kS (Eigenspin Z Down) (kPhase p2)) = kS (Eigenspin Z Up)   (kPhase $ p1 *~ p2)
-ObsKet1 (Sig SY $ sPhase p1) (kS (Eigenspin X Up)   (kPhase p2)) = kS (Eigenspin Y Up)   (kPhase $ p1 *~ p2)
-ObsKet1 (Sig SY $ sPhase p1) (kS (Eigenspin X Down) (kPhase p2)) = kS (Eigenspin Y Down) (kPhase $ p1 *~ p2 *~ M1)
-ObsKet1 (Sig SY $ sPhase p1) (kS (Eigenspin Y Up)   (kPhase p2)) = kS (Eigenspin Z Down) (kPhase $ p1 *~ p2 *~ Pi)
-ObsKet1 (Sig SY $ sPhase p1) (kS (Eigenspin Y Down) (kPhase p2)) = kS (Eigenspin X Up)   (kPhase $ p1 *~ p2 *~ Mi)
-ObsKet1 (Sig SY $ sPhase p1) (kS (Eigenspin Z Up)   (kPhase p2)) = kS (Eigenspin Z Down) (kPhase $ p1 *~ p2 *~ Pi)
-ObsKet1 (Sig SY $ sPhase p1) (kS (Eigenspin Z Down) (kPhase p2)) = kS (Eigenspin Z Up)   (kPhase $ p1 *~ p2 *~ M1)
-ObsKet1 (Sig SZ $ sPhase p1) (kS (Eigenspin X Up)   (kPhase p2)) = kS (Eigenspin X Down) (kPhase $ p1 *~ p2 *~ M1)
-ObsKet1 (Sig SZ $ sPhase p1) (kS (Eigenspin X Down) (kPhase p2)) = kS (Eigenspin X Up)   (kPhase $ p1 *~ p2 *~ M1)
-ObsKet1 (Sig SZ $ sPhase p1) (kS (Eigenspin Y Up)   (kPhase p2)) = kS (Eigenspin Y Down) (kPhase $ p1 *~ p2 *~ M1)
-ObsKet1 (Sig SZ $ sPhase p1) (kS (Eigenspin Y Down) (kPhase p2)) = kS (Eigenspin Y Up)   (kPhase $ p1 *~ p2 *~ M1)
-ObsKet1 (Sig SZ $ sPhase p1) (kS (Eigenspin Z Up)   (kPhase p2)) = kS (Eigenspin Z Up)   (kPhase $ p1 *~ p2)
-ObsKet1 (Sig SZ $ sPhase p1) (kS (Eigenspin Z Down) (kPhase p2)) = kS (Eigenspin Z Down) (kPhase $ p1 *~ p2 *~ M1)
+ObsKet1 (Sig SI $ sPhase p1) (kS (Eigenspin o ud)   (kPhase p2)) = kS (Eigenspin o ud)   (kPhase $ p1 <+> p2)
+ObsKet1 (Sig SX $ sPhase p1) (kS (Eigenspin X Up)   (kPhase p2)) = kS (Eigenspin X Up)   (kPhase $ p1 <+> p2)
+ObsKet1 (Sig SX $ sPhase p1) (kS (Eigenspin X Down) (kPhase p2)) = kS (Eigenspin X Down) (kPhase $ p1 <+> p2 <+> M1)
+ObsKet1 (Sig SX $ sPhase p1) (kS (Eigenspin Y Up)   (kPhase p2)) = kS (Eigenspin Y Down) (kPhase $ p1 <+> p2 <+> Pi)
+ObsKet1 (Sig SX $ sPhase p1) (kS (Eigenspin Y Down) (kPhase p2)) = kS (Eigenspin Y Up)   (kPhase $ p1 <+> p2 <+> P1)
+ObsKet1 (Sig SX $ sPhase p1) (kS (Eigenspin Z Up)   (kPhase p2)) = kS (Eigenspin Z Down) (kPhase $ p1 <+> p2)
+ObsKet1 (Sig SX $ sPhase p1) (kS (Eigenspin Z Down) (kPhase p2)) = kS (Eigenspin Z Up)   (kPhase $ p1 <+> p2)
+ObsKet1 (Sig SY $ sPhase p1) (kS (Eigenspin X Up)   (kPhase p2)) = kS (Eigenspin Y Up)   (kPhase $ p1 <+> p2)
+ObsKet1 (Sig SY $ sPhase p1) (kS (Eigenspin X Down) (kPhase p2)) = kS (Eigenspin Y Down) (kPhase $ p1 <+> p2 <+> M1)
+ObsKet1 (Sig SY $ sPhase p1) (kS (Eigenspin Y Up)   (kPhase p2)) = kS (Eigenspin Z Down) (kPhase $ p1 <+> p2 <+> Pi)
+ObsKet1 (Sig SY $ sPhase p1) (kS (Eigenspin Y Down) (kPhase p2)) = kS (Eigenspin X Up)   (kPhase $ p1 <+> p2 <+> Mi)
+ObsKet1 (Sig SY $ sPhase p1) (kS (Eigenspin Z Up)   (kPhase p2)) = kS (Eigenspin Z Down) (kPhase $ p1 <+> p2 <+> Pi)
+ObsKet1 (Sig SY $ sPhase p1) (kS (Eigenspin Z Down) (kPhase p2)) = kS (Eigenspin Z Up)   (kPhase $ p1 <+> p2 <+> M1)
+ObsKet1 (Sig SZ $ sPhase p1) (kS (Eigenspin X Up)   (kPhase p2)) = kS (Eigenspin X Down) (kPhase $ p1 <+> p2 <+> M1)
+ObsKet1 (Sig SZ $ sPhase p1) (kS (Eigenspin X Down) (kPhase p2)) = kS (Eigenspin X Up)   (kPhase $ p1 <+> p2 <+> M1)
+ObsKet1 (Sig SZ $ sPhase p1) (kS (Eigenspin Y Up)   (kPhase p2)) = kS (Eigenspin Y Down) (kPhase $ p1 <+> p2 <+> M1)
+ObsKet1 (Sig SZ $ sPhase p1) (kS (Eigenspin Y Down) (kPhase p2)) = kS (Eigenspin Y Up)   (kPhase $ p1 <+> p2 <+> M1)
+ObsKet1 (Sig SZ $ sPhase p1) (kS (Eigenspin Z Up)   (kPhase p2)) = kS (Eigenspin Z Up)   (kPhase $ p1 <+> p2)
+ObsKet1 (Sig SZ $ sPhase p1) (kS (Eigenspin Z Down) (kPhase p2)) = kS (Eigenspin Z Down) (kPhase $ p1 <+> p2 <+> M1)
 
 
 timesPhase : Phase -> KetSpins n -> KetSpins n
-timesPhase p1 (kPhase p2) = kPhase (p1 *~ p2)
+timesPhase p1 (kPhase p2) = kPhase (p1 <+> p2)
 timesPhase p1 (kS e es)   = kS e (timesPhase p1 es)
 
 topOrientation : KetSpins (S n) -> Orient
@@ -154,7 +154,7 @@ kGetPhase (kS (Eigenspin o s) x) = kGetPhase x
 
 -- Higher Sigma acting on abstract multi-qubit states
 ObsKet : Sigma n -> KetSpins n -> KetSpins n
-ObsKet (sPhase p1)  (kPhase p2)  = kPhase $ p1 *~ p2
+ObsKet (sPhase p1)  (kPhase p2)  = kPhase $ p1 <+> p2
 ObsKet (Sig pl s) (kS k ks) with (ObsKet1 (pack pl) (kPack k)) 
   | r = kS (topKetSpin r) (timesPhase (kGetPhase r) (ObsKet s ks))
 
@@ -220,58 +220,74 @@ Bra.(<&>) b1 b2 = kb $ ox (bk b1) (bk b2)
 -------------------------------------------------------------------------------------------
 
 -- Phase to complex number
-Phase.com : Phase -> Complex Float
-Phase.com (Sign False False) = c1
-Phase.com (Sign False True)  = ci
-Phase.com (Sign True False)  = cm1
-Phase.com (Sign True True)   = cmi
+Phase.comZ : Phase -> Complex ZZ
+Phase.comZ (Sign False False) = C1
+Phase.comZ (Sign False True)  = Ci
+Phase.comZ (Sign True False)  = Cm1
+Phase.comZ (Sign True True)   = Cmi
 
--- Numeric Sigma 1's
-sx : QubitOp 1 Float
-sx = map (* (0.5 :+ 0)) [[c0, c1], [c1, c0]]
+-- Phase to complex float
+Phase.comF : Phase -> Complex Float
+Phase.comF (Sign False False) = c1
+Phase.comF (Sign False True)  = ci
+Phase.comF (Sign True False)  = cm1
+Phase.comF (Sign True True)   = cmi
 
-sy : QubitOp 1 Float
-sy = map (* (0.5 :+ 0)) [[c0, cmi], [ci, c0]]
+-- integral Sigma 1's
+sx : QubitOp 1 ZZ
+sx = [[C0, C1], [C1, C0]]
 
-sz : QubitOp 1 Float
-sz = map (* (0.5 :+ 0)) [[c1, c0], [c0, cm1]]
+sy : QubitOp 1 ZZ
+sy = [[C0, Cmi], [Ci, C0]]
 
-si : QubitOp 1 Float
-si = map (* (0.5 :+ 0)) [[c1, c0], [c0, c1]]
+sz : QubitOp 1 ZZ
+sz = [[C1, C0], [C0, Cm1]]
 
--- Pauli to Matrix
-Pauli.mat : Pauli -> QubitObs 1
-Pauli.mat SX = sx
-Pauli.mat SY = sy
-Pauli.mat SZ = sz
-Pauli.mat SI = si
+si : QubitOp 1 ZZ
+si = [[C1, C0], [C0, C1]]
+
+Pauli.comZ : Pauli -> QubitOp 1 ZZ
+Pauli.comZ SX = sx
+Pauli.comZ SY = sy
+Pauli.comZ SZ = sz
+Pauli.comZ SI = si
+
+-- floating Sigma 1's
+Pauli.comF : Pauli -> QubitOp 1 Float
+Pauli.comF h = (0.5 :+ 0) <#> (cast $ comZ h)
 
 -- Sigma n to matrix
-Sigma.mat : Sigma n -> QubitObs n
-Sigma.mat (sPhase ph) = [[com ph]]
-Sigma.mat (Sig p s)   = (mat p) <&> (mat s)
+Sigma.comF : Sigma n -> QubitOp n Float
+Sigma.comF (sPhase ph) = [[comF ph]]
+Sigma.comF (Sig p s)   = (comF p) <&> (comF s)
+
+-- Sigma n to matrix
+Sigma.comZ : Sigma n -> QubitOp n ZZ
+Sigma.comZ (sPhase ph) = [[comZ ph]]
+Sigma.comZ (Sig p s)   = (comZ p) <&> (comZ s)
+
 
 -- Numeric KetSpin vectors
-xUp : Qubit 1
+xUp : Qubit 1 Float
 xUp = normalize [c1, c1]
 
-xDown : Qubit 1
+xDown : Qubit 1 Float
 xDown = normalize [cm1, c1]
 
-yUp : Qubit 1
+yUp : Qubit 1 Float
 yUp = normalize [cmi, c1]
 
-yDown : Qubit 1
+yDown : Qubit 1 Float
 yDown = normalize [ci, c1]
 
-zUp : Qubit 1
+zUp : Qubit 1 Float
 zUp = [c1, c0]
 
-zDown : Qubit 1
+zDown : Qubit 1 Float
 zDown = [c0, c1]
 
 -- [single] KetSpin to numeric vector 
-Spin.mat : EigenSpin -> QubitKet 1
+Spin.mat : EigenSpin -> QubitKet 1 Float
 Spin.mat (Eigenspin X Up)   = col xUp
 Spin.mat (Eigenspin X Down) = col xDown
 Spin.mat (Eigenspin Y Up)   = col yUp
@@ -280,16 +296,16 @@ Spin.mat (Eigenspin Z Up)   = col zUp
 Spin.mat (Eigenspin Z Down) = col zDown
 
 -- KetSpin n to numeric vector
-Ket.mat : KetSpins n -> QubitKet n
+Ket.mat : KetSpins n -> QubitKet n ZZ
 Ket.mat (kPhase ph) = [[ com ph ]]
 Ket.mat (kS e es)   = (mat e) <&> (mat es)
 
 -- Bra to row-vector matrix
-Bra.mat : BraSpins n -> QubitBra n
+Bra.mat : BraSpins n -> QubitBra n ZZ
 Bra.mat b = transpose (Ket.mat $ bk b)
 
 -- Bra times Ket to complex number
-Bra.(<\>) : BraSpins n -> KetSpins n -> Complex Float
+Bra.(<\>) : Ring a => BraSpins n a -> KetSpins n a -> Complex a
 Bra.(<\>) b k = index 0 $ index 0 $ (mat b) <> (mat k) 
 
           

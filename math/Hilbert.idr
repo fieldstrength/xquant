@@ -1,9 +1,7 @@
 
 module Hilbert
 
-import Matrix
-import Data.Complex
-
+import Data.Matrix
 
 infixl 3 <|>
 
@@ -126,4 +124,27 @@ cmi = 0 :+ -1
 
 cm1 : Complex Float
 cm1 = -1 :+ 0
+
+
+C1 : Complex ZZ
+C1 = 1 :+ 0
+
+Ci : Complex ZZ
+Ci = 0 :+ 1
+
+Cm1 : Complex ZZ
+Cm1 = -1 :+ 0
+
+Cmi : Complex ZZ
+Cmi = 0 :+ -1
+
+C0 : Complex ZZ
+C0 = 0 :+ 0
+
+
+instance Cast ZZ Float where
+  cast x = fromInteger (cast x)
+
+instance Cast a b => Cast (Vect n a) (Vect n b) where
+  cast = map cast
 

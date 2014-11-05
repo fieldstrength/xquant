@@ -4,8 +4,6 @@ module Sigmas
 
 infixr 5 <>
 infixr 7 <&>
-infixr 9 *~
-
 
 -------------------------------------------------------------------------------------------
 --           Data for Sigma Operators  • Complex signs (Phases)
@@ -32,21 +30,17 @@ instance Eq Phase where
 xor : Bool -> Bool -> Bool
 xor a b = if a then not b else b
 
--- Phase multiplication
-pMult : Phase -> Phase -> Phase
-pMult (Sign as ai) (Sign bs bi) = Sign (xor (ai && bi) $ xor as bs) (xor ai bi)
+instance Semigroup Phase where
+  (<+>) (Sign as ai) (Sign bs bi) = Sign (xor (ai && bi) $ xor as bs) (xor ai bi)
 
--- Infix Op for Phase multiply
-(*~) : Phase -> Phase -> Phase
-p1 *~ p2 = pMult p1 p2
+instance Monoid Phase where
+  neutral = Sign False False
 
--- complex conjugate on Phases
+instance Group Phase where
+  inverse (Sign a b) = Sign (xor a b) b
+  
 star : Phase -> Phase
-star (Sign a b) = Sign (xor a b) b
-
--- divide phases
-(/) : Phase -> Phase -> Phase
-(/) p1 p2 = star p2 *~ p1
+star (Sign a b) = Sign a (not b)
 
 -- Phase Shorthands - Capital 'P' for phases
 P1 : Phase
@@ -147,41 +141,43 @@ pack s = Sig s $ sPhase P1
 
 
 -- Phase times a Sigma
-xPhase : Phase -> Sigma n -> Sigma n
-xPhase ph (sPhase ph2) = sPhase $ ph *~ ph2
-xPhase ph (Sig pl s)   = Sig pl $ xPhase ph s
+xPhaseSig.(*) : Phase -> Sigma n -> Sigma n
+xPhaseSig.(*) ph (sPhase ph2) = sPhase $ ph <+> ph2
+xPhaseSig.(*) ph (Sig pl s)   = Sig pl $ ph * s
 
+xSigPhase.(*) : Sigma n -> Phase -> Sigma n
+xSigPhase.(*) s p = p * s
 
 -- Single Sigma multiply
 s1Mult : Sigma 1 -> Sigma 1 -> Sigma 1
 s1Mult (Sig x1 $ sPhase p1) (Sig x2 $ sPhase p2) = case x1 of
                                                         SX => case x2 of
-                                                                   SX => Sig SI (sPhase $ p1 *~ p2) 
-                                                                   SY => Sig SZ (sPhase $ p1 *~ p2 *~ Pi)
-                                                                   SZ => Sig SY (sPhase $ p1 *~ p2 *~ Mi)
-                                                                   SI => Sig SX (sPhase $ p1 *~ p2)
+                                                                   SX => Sig SI (sPhase $ p1 <+> p2) 
+                                                                   SY => Sig SZ (sPhase $ p1 <+> p2 <+> Pi)
+                                                                   SZ => Sig SY (sPhase $ p1 <+> p2 <+> Mi)
+                                                                   SI => Sig SX (sPhase $ p1 <+> p2)
                                                         SY => case x2 of
-                                                                   SY => Sig SI (sPhase $ p1 *~ p2)
-                                                                   SZ => Sig SX (sPhase $ p1 *~ p2 *~ Pi)
-                                                                   SX => Sig SZ (sPhase $ p1 *~ p2 *~ Mi)
-                                                                   SI => Sig SY (sPhase $ p1 *~ p2)
+                                                                   SY => Sig SI (sPhase $ p1 <+> p2)
+                                                                   SZ => Sig SX (sPhase $ p1 <+> p2 <+> Pi)
+                                                                   SX => Sig SZ (sPhase $ p1 <+> p2 <+> Mi)
+                                                                   SI => Sig SY (sPhase $ p1 <+> p2)
                                                         SZ => case x2 of
-                                                                   SZ => Sig SI (sPhase $ p1 *~ p2)
-                                                                   SX => Sig SY (sPhase $ p1 *~ p2 *~ Pi)
-                                                                   SY => Sig SX (sPhase $ p1 *~ p2 *~ Mi)
-                                                                   SI => Sig SZ (sPhase $ p1 *~ p2)
+                                                                   SZ => Sig SI (sPhase $ p1 <+> p2)
+                                                                   SX => Sig SY (sPhase $ p1 <+> p2 <+> Pi)
+                                                                   SY => Sig SX (sPhase $ p1 <+> p2 <+> Mi)
+                                                                   SI => Sig SZ (sPhase $ p1 <+> p2)
                                                         SI => case x2 of
-                                                                   SI => Sig SI (sPhase $ p1 *~ p2)
-                                                                   SX => Sig SX (sPhase $ p1 *~ p2)
-                                                                   SY => Sig SY (sPhase $ p1 *~ p2)
-                                                                   SZ => Sig SZ (sPhase $ p1 *~ p2)
+                                                                   SI => Sig SI (sPhase $ p1 <+> p2)
+                                                                   SX => Sig SX (sPhase $ p1 <+> p2)
+                                                                   SY => Sig SY (sPhase $ p1 <+> p2)
+                                                                   SZ => Sig SZ (sPhase $ p1 <+> p2)
 
 
 -- Higher Sigma mutiply
 sMult : Sigma n -> Sigma n -> Sigma n
-sMult (sPhase p1)  (sPhase p2)  = sPhase $ p1 *~ p2
+sMult (sPhase p1)  (sPhase p2)  = sPhase $ p1 <+> p2
 sMult (Sig pl1 s1) (Sig pl2 s2) with (s1Mult (pack pl1) (pack pl2)) 
-  | r = Sig (topPauli r) (xPhase (getPhase r) (sMult s1 s2))
+  | r = Sig (topPauli r) ((getPhase r) * (sMult s1 s2))
   
 -- Infix op for Sigma multiply
 (<>) : Sigma n -> Sigma n -> Sigma n
@@ -190,8 +186,8 @@ sMult (Sig pl1 s1) (Sig pl2 s2) with (s1Mult (pack pl1) (pack pl2))
 
 -- Tensor multiply Sigmas ('otimes', i.e. ⊗ )
 ox : Sigma n -> Sigma m -> Sigma (n + m)
-ox s            (sPhase p)   ?= {Sigma_OTimes_Lemma_1} xPhase p s
-ox (sPhase p)   s             = xPhase p s
+ox s            (sPhase p)   ?= {Sigma_OTimes_Lemma_1} p * s
+ox (sPhase p)   s             = p * s
 ox (Sig pl1 s1) (Sig pl2 s2) ?= {Sigma_OTimes_Lemma_2} ox (dropLast $ Sig pl1 s1)
                                                           (Sig (lastPauli $ Sig pl1 s1) (Sig pl2 s2)) where
   dropLast : {k : Nat} -> Sigma (S k) -> Sigma k
@@ -207,9 +203,6 @@ opower : Sigma n -> (m : Nat) -> Sigma (n * m)
 opower s Z     ?=  {Sigma_Power_Lemma_1}  sPhase P1
 opower s (S n) ?=  {Sigma_Power_Lemma_2}  s <&> (opower s n)
 
-
-
--- Thanks to profmakx for showing me how to prove Sigma_OTimes lemmas
 
 ---------- Proofs ----------
 
