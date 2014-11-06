@@ -1,5 +1,6 @@
 module NNat
 
+import Control.Isomorphism
 
 ||| Non-zero natural number
 data NNat = One | S NNat
@@ -36,29 +37,3 @@ instance Num NNat where
   abs = id
   fromInteger 1 = One
   fromInteger n = cast {to=NNat} $ cast {to=Nat} n
-
-band : Bool -> Bool -> Bool
-band True True = True
-band _    _    = False
-
-xor : Bool -> Bool -> Bool
-xor False b = b
-xor True  b = not b
-
-
-instance Semigroup Bool where
-  (<+>) = xor
-
-instance Monoid Bool where
-  neutral = False
-
-instance Group Bool where
-  inverse = (xor True)
-  
-instance AbelianGroup Bool
-
-instance Ring Bool where 
-  (<*>) = (band)
- 
-instance RingWithUnity Bool where
-  unity = True
