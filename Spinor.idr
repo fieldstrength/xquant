@@ -1,7 +1,7 @@
 
 module Spinor
 
-import Data.Matrix
+import math.Hilbert
 
 %default total
 
