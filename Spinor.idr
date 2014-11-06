@@ -2,7 +2,6 @@
 module Spinor
 
 import Data.Matrix
-import math.Alg
 
 %default total
 

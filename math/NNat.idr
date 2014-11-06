@@ -1,7 +1,5 @@
 module NNat
 
-import Control.Isomorphism
-
 ||| Non-zero natural number
 data NNat = One | S NNat
 

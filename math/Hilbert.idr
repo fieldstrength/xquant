@@ -147,4 +147,3 @@ instance Cast ZZ Float where
 
 instance Cast a b => Cast (Vect n a) (Vect n b) where
   cast = map cast
-

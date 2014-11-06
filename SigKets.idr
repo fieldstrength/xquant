@@ -254,7 +254,10 @@ Pauli.comZ SI = si
 
 -- floating Sigma 1's
 Pauli.comF : Pauli -> QubitOp 1 Float
-Pauli.comF h = (0.5 :+ 0) <#> (cast $ comZ h)
+Pauli.comF SX = (0.5 :+ 0) <#> [[c0, c1], [c1, c0]]
+Pauli.comF SY = (0.5 :+ 0) <#> [[c0, cmi], [ci, c0]]
+Pauli.comF SZ = (0.5 :+ 0) <#> [[c1, c0], [c0, cm1]]
+Pauli.comF SI = (0.5 :+ 0) <#> [[c1, c0], [c0, c1]]
 
 -- Sigma n to matrix
 Sigma.comF : Sigma n -> QubitOp n Float
@@ -287,28 +290,29 @@ zDown : Qubit 1 Float
 zDown = [c0, c1]
 
 -- [single] KetSpin to numeric vector 
-Spin.mat : EigenSpin -> QubitKet 1 Float
-Spin.mat (Eigenspin X Up)   = col xUp
-Spin.mat (Eigenspin X Down) = col xDown
-Spin.mat (Eigenspin Y Up)   = col yUp
-Spin.mat (Eigenspin Y Down) = col yDown
-Spin.mat (Eigenspin Z Up)   = col zUp
-Spin.mat (Eigenspin Z Down) = col zDown
+Spin.matF : EigenSpin -> QubitKet 1 Float
+Spin.matF (Eigenspin X Up)   = col xUp
+Spin.matF (Eigenspin X Down) = col xDown
+Spin.matF (Eigenspin Y Up)   = col yUp
+Spin.matF (Eigenspin Y Down) = col yDown
+Spin.matF (Eigenspin Z Up)   = col zUp
+Spin.matF (Eigenspin Z Down) = col zDown
 
--- KetSpin n to numeric vector
-Ket.mat : KetSpins n -> QubitKet n ZZ
-Ket.mat (kPhase ph) = [[ com ph ]]
-Ket.mat (kS e es)   = (mat e) <&> (mat es)
+-- [single] KetSpin to numeric vector 
+KetSpins.matF : KetSpins n -> QubitKet n Float
+KetSpins.matF (kPhase ph) = [[comF ph]]
+KetSpins.matF (kS e k)    = (Spin.matF e) <&> (KetSpins.matF k)
 
 -- Bra to row-vector matrix
-Bra.mat : BraSpins n -> QubitBra n ZZ
-Bra.mat b = transpose (Ket.mat $ bk b)
+BraSpins.matF : BraSpins n -> QubitBra n Float
+BraSpins.matF (bPhase ph) = [[comF (star ph)]]
+BraSpins.matF (bS e b)    = (transpose $ Spin.matF e) <&> (BraSpins.matF b)
 
 -- Bra times Ket to complex number
-Bra.(<\>) : Ring a => BraSpins n a -> KetSpins n a -> Complex a
-Bra.(<\>) b k = index 0 $ index 0 $ (mat b) <> (mat k) 
+Bra.(<\>) : Ring a => BraSpins n -> KetSpins n -> Complex Float
+Bra.(<\>) b k = index 0 $ index 0 $ (matF b) <> (matF k) 
 
-          
+
 ---------- Proofs ----------
 
 Ket_OTimes_Lemma_1 = proof
