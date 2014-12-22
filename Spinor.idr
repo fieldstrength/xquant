@@ -1,6 +1,9 @@
 
 module Spinor
 
+import Data.Complex
+import Data.ZZ
+import Data.Matrix
 import math.Hilbert
 
 %default total
@@ -82,8 +85,6 @@ D2_anticommRelation_10 = Refl
 ||| Anticommutation relation, {Γμ,Γν} = 2 η{μν} Id, for D = 2
 D2_anticommRelation_11 : g1 >><< g1 = (Pos 2 :+ 0) <#> Id
 D2_anticommRelation_11 = Refl
-
-
 
 
 {-  need to prove: 

@@ -1,6 +1,9 @@
 
 module SigKets
 
+import Data.Complex
+import Data.ZZ
+import Data.Matrix
 import Sigmas
 import math.Hilbert
 
@@ -310,7 +313,36 @@ BraSpins.matF (bS e b)    = (transpose $ Spin.matF e) <&> (BraSpins.matF b)
 
 -- Bra times Ket to complex number
 Bra.(<\>) : Ring a => BraSpins n -> KetSpins n -> Complex Float
-Bra.(<\>) b k = index 0 $ index 0 $ (matF b) <> (matF k) 
+Bra.(<\>) b k = index 0 $ index 0 $ (matF b) <> (matF k)
+
+
+||| Sigma operators commute
+data Commutes : Sigma n -> Sigma n -> Type where
+  CommZero : (x : Sigma Z) -> (y : Sigma Z) -> Commutes x y
+  CommSucc : (a : Sigma 1) -> (b : Sigma 1) -> Commutes x y -> Commutes (a <&> x) (b <&> y)
+
+||| Test for Sigma commutation
+commute : Sigma n -> Sigma n -> Bool
+commute (sPhase x)  (sPhase y)  = True
+commute (Sig p1 s1) (Sig p2 s2) = xor (p1 /= p2) $ commute s1 s2
+
+||| All Sigmas of a given order
+allSigmas : (n : Nat) -> List $ Sigma n
+allSigmas Z     = [sPhase P1]
+allSigmas (S n) = allSigmas n >>= (\s => [Sig SI s, Sig SX s, Sig SY s, Sig SZ s])
+
+
+||| Whether each non-identity Pauli operator occurs an even number of times
+qubitParity : List Pauli -> Vect 3 Bool
+qubitParity []         = [False, False, False]
+qubitParity (SI :: ss) = qubitParity ss
+qubitParity (SX :: ss) = updateAt 0 not $ qubitParity ss
+qubitParity (SY :: ss) = updateAt 1 not $ qubitParity ss
+qubitParity (SZ :: ss) = updateAt 2 not $ qubitParity ss
+
+sigPair : (n : Nat) -> List $ Vect 2 (Sigma n)
+sigPair n = [ [s1,s2] | s1 <- (allSigmas n), s2 <- (allSigmas n) ]
+
 
 
 ---------- Proofs ----------

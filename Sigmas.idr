@@ -12,9 +12,10 @@ infixr 7 <&>
 --                                        (tensor products of Paulis with an overall phase)
 -------------------------------------------------------------------------------------------
 
--- 4 basic phases, in order: (+1), (+i), (-1), (-i) –
---   encoded with two Bools: (minus sign) (factor of i)
-data Phase = Sign Bool Bool
+||| 4 primative complex phases, (+1), (+i), (-1), (-i),
+||| bools represent minus sign and i presence respectively
+data Phase : Type where
+  Sign : (minus : Bool) -> (i : Bool) -> Phase
 
 instance Show Phase where
   show (Sign False False) = "+1"
@@ -61,6 +62,13 @@ instance Show Pauli where
   show SX = "x"
   show SY = "y"
   show SZ = "z" -- should be "σz" whene idris can print non-8-bit characters
+
+instance Eq Pauli where
+  SI == SI = True
+  SX == SX = True
+  SY == SY = True
+  SZ == SZ = True
+  _  == _  = False
 
 class LaTeX a where
   TeX : a -> String
@@ -202,6 +210,7 @@ ox (Sig pl1 s1) (Sig pl2 s2) ?= {Sigma_OTimes_Lemma_2} ox (dropLast $ Sig pl1 s1
 opower : Sigma n -> (m : Nat) -> Sigma (n * m)
 opower s Z     ?=  {Sigma_Power_Lemma_1}  sPhase P1
 opower s (S n) ?=  {Sigma_Power_Lemma_2}  s <&> (opower s n)
+
 
 
 ---------- Proofs ----------

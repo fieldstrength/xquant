@@ -2,43 +2,46 @@
 module Hilbert
 
 import Data.Matrix
+import Data.Complex
+import Data.Floats
+import Data.ZZ
 
 infixl 3 <|>
 
 ---------------------------------------------------------------------------
---                               Hilbert Space Types
+--                            Hilbert Space Types
 ---------------------------------------------------------------------------
 
-||| Type function for state vector in the n-dimensional complex Hilbert space
+||| State vector type for n-dimensional complex Hilbert space
 StateSpace : Nat -> Type -> Type
 StateSpace n a = Vect n (Complex a)
 
-||| n-dimensional quantum observable datatype ~ n x n complex matrices 
+||| Quantum observable type, n x n complex matrices 
 Op : Nat -> Type -> Type
 Op n a = Matrix n n (Complex a)
 
-||| n-dimensional ket vector as a proper n x 1 matrix collumn
+||| Ket vector, a n x 1 matrix collumn
 KetSpace : Nat -> Type -> Type
 KetSpace n a = Matrix n 1 (Complex a)
 
-||| n-dimensional bra vector as a proper 1 x n matrix row
+||| Bra vector, a 1 x n matrix row
 BraSpace : Nat -> Type -> Type
 BraSpace n a = Matrix 1 n (Complex a)
 
 
--- Shorthand for the n-qubit state space, 2^n dimensional Hilbert space 
+||| Qubit state space type, 2^n dimensional Hilbert space 
 Qubit : Nat -> Type -> Type
 Qubit n a = StateSpace (power 2 n)a 
 
--- Shorthand for n-qubit statespace observable type
+||| Qubit observable type
 QubitOp : Nat -> Type -> Type
 QubitOp n a = let m = power 2 n in Matrix m m (Complex a)
 
--- Shorthand for n-qubit collumn vector matrix type
+||| Qubit collumn vector type
 QubitKet : Nat -> Type -> Type
 QubitKet n a = let m = power 2 n in Matrix m 1 (Complex a)
 
--- Shorthand for n-qubit row vector matrix type
+||| Qubit row vector type
 QubitBra : Nat -> Type -> Type
 QubitBra n a = let m = power 2 n in Matrix 1 m (Complex a)
 
@@ -52,32 +55,32 @@ normalize : StateSpace n Float -> StateSpace n Float
 normalize q = let sqn = sum $ map ((\x => x*x) . magnitude) q in 
   map (\(r :+ i) => (r / (sqrt sqn)) :+ (i / (sqrt sqn))) q 
 
-conjugate : Group a => Complex a -> Complex a
-conjugate (r :+ i) = r :+ inverse i
+conjugate : (Num a , Neg a) => Complex a -> Complex a
+conjugate (r :+ i) = r :+ -i
 
 -- Infix Hilbert inner product
+--   should be more general, but no official declaration for Num a => Num (Complex a)
+||| Hilbert Inner product
 (<|>) : StateSpace n Float -> StateSpace n Float -> Complex Float
 (<|>) q w = sum $ zipWith (*) (map Complex.conjugate q) w
 
+
 -- Hermitian conjugate (adjoint) on complex matrices
-dagger : Group a => Matrix n m (Complex a) -> Matrix m n (Complex a)
+dagger : (Num a , Neg a) => Matrix n m (Complex a) -> Matrix m n (Complex a)
 dagger h = map (map Hilbert.conjugate) $ transpose h
 
-bra : Group a => StateSpace n a -> BraSpace n a
-bra v = dagger $ col v
 
 ---------------------------------------------------------------------------
 --                         State Primatives
 ---------------------------------------------------------------------------
 
--- Standard position basis vector
+||| Standard position basis vector
 cbasis : {n : Nat} -> (Fin n) -> StateSpace n Float
 cbasis {n} f = basis f
 
--- Nat to Float conversion, needed below
+||| Nat to Float conversion -- needed below
 natToFloat : Nat -> Float
-natToFloat Z     = 0.0
-natToFloat (S k) = 1.0 + (natToFloat k)
+natToFloat n = fromInteger $ cast n
 
 -- Momentum basis
 --   using helper function: pBasis _ n p x  ~  e^(2 π i p x / n) :: ...
@@ -94,7 +97,7 @@ sKet f = col (cbasis f)
 sRow : (Fin d) -> BraSpace d Float
 sRow f = row (cbasis f)
 
--- Normalized N-qubit QHZ ket 
+-- Normalized N-qubit GHZ ket 
 GHZ : (N : Nat) -> QubitKet N Float
 GHZ k = col $ normalize $ ghz (power 2 k) (power 2 k) where
   ghz : (n : Nat) -> Nat -> StateSpace n Float
