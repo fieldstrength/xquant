@@ -2,8 +2,6 @@ module Marked
 
 %default total
 
-data Mark = O | X
-
 ||| A set of sites that are either marked (X) or unmarked (O)
 ||| @ n number of sites
 ||| @ m number of marked sites
@@ -37,30 +35,18 @@ data Compat : Marks n m -> Marks n j -> Type where
   comOX   : Compat y z -> Compat (mO y) (mX z)
   comXO   : Compat y z -> Compat (mX y) (mO z)
 
-||| Add two marked lists together 
-markAdd : (q : Marks n m) -> (w : Marks n j) -> Compat q w -> Marks n (m + j)
-markAdd _      _      comZero    = mZ
-markAdd (mO y) (mO z) (comOO c)  = mO (markAdd y z c)
-markAdd (mO y) (mX z) (comOX c) ?= mX (markAdd y z c)
-markAdd (mX y) (mO z) (comXO c)  = mX (markAdd y z c)
+||| Add two compatible marked sets together
+markAdd : {q : Marks n m} -> {w : Marks n j} -> Compat q w -> Marks n (m + j)
+markAdd comZero    = mZ
+markAdd (comOO c)  = mO (markAdd c)
+markAdd (comOX c) ?= mX (markAdd c)
+markAdd (comXO c)  = mX (markAdd c)
 
-
-toV : Marks n m -> Vect n Mark
-toV mZ     = []
-toV (mX q) = X :: (toV q)
-toV (mO q) = O :: (toV q)
-
-fromV : Vect n Mark -> (m : Nat ** Marks n m)
-fromV []        = (_ ** mZ)
-fromV (X :: xs) = (_ ** mX $ getProof $ fromV xs)
-fromV (O :: xs) = (_ ** mO $ getProof $ fromV xs)
-
-
+||| The dual of a marked set, status of every site switched
 dual : Marks n m -> Marks n (n - m)
 dual mZ      = mZ
 dual (mX q)  = mO $ dual q
 dual (mO q) ?= mX $ dual q
-
 
 shift : LTE n m -> LTE n (S m)
 shift LTEZero     = LTEZero
@@ -79,8 +65,62 @@ minusSuccLeft n     Z     LTEZero = ?minusSuccLeft_rhs_1
 minusSuccLeft (S n) (S m) (LTESucc l) with (minusSuccLeft n m l)
   | eqn = ?minusSuccLeft_rhs_2
 
+Empty : (n : Nat) -> Marks n Z
+Empty Z     = mZ
+Empty (S n) = mO $ Empty n
+
+--------------------------------------------------------
+--       Conversion to/from Vect for convenience
+--------------------------------------------------------
+
+data Mark = O | X
+
+toV : Marks n m -> Vect n Mark
+toV mZ     = []
+toV (mX q) = X :: (toV q)
+toV (mO q) = O :: (toV q)
+
+fromV : Vect n Mark -> (m : Nat ** Marks n m)
+fromV []        = (_ ** mZ)
+fromV (X :: xs) = (_ ** mX $ getProof $ fromV xs)
+fromV (O :: xs) = (_ ** mO $ getProof $ fromV xs)
+
+--------------------------------------------------------
+--                    Partitions
+--------------------------------------------------------
+
+||| A partition of a set of sites into subsets
+data Partition : (x : Marks n m) -> Type where
+  POne : (y : Marks n m) -> Partition y
+  PNxt : (y : Marks n m) -> (c : Compat y z) -> Partition $ markAdd c
+
+-- Trouble type-checking Partition example: Idris-dev issue # 1805
+
+||| A complete partition of a set of sites into subsets
+data PartitionOfUnity : Nat -> Type where
+  PUnity : {m : Marks n n} -> (p : Partition m) -> PartitionOfUnity n
+
+||| A partition of a set of sites into subsets of a particular size
+||| @ i the size of the subsets
+||| @ x which sites are included in the partition
+data PartitionBy : (i : Nat) -> (x : Marks n m) -> Type where
+  PBZero : {i,n : Nat} -> PartitionBy i (Empty n)
+  PBNext : {y : Marks n i} -> (c : Compat y z) -> PartitionBy i z -> PartitionBy i $ markAdd c
+
+||| A complete partition of a set of sites into subsets of a fixed size
+||| @ i the size of the subsets
+||| @ n the size of the partitioned set
+data PartitionOfUnityBy : (i : Nat) -> (n : Nat) -> Type where
+  PUnityBy : {x : Marks n n} -> (p : PartitionBy i x) -> PartitionOfUnityBy i n
+
 
 ---------- Proofs ----------
+
+markAdd_lemma_1 = proof
+  intros
+  rewrite plusSuccRightSucc m j
+  trivial
+
 
 dual_lemma_1 = proof
   intros
@@ -90,20 +130,11 @@ dual_lemma_1 = proof
   trivial
 
 
-minusSuccLeft_rhs_2 = proof
-  intros
-  trivial
-
-
 minusSuccLeft_rhs_1 = proof
   intros
   rewrite sym $ minusZeroRight n
   trivial
 
-
-markAdd_lemma_1 = proof
+minusSuccLeft_rhs_2 = proof
   intros
-  rewrite plusSuccRightSucc m m1
   trivial
-
-
