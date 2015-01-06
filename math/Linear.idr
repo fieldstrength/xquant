@@ -33,3 +33,12 @@ data SesquiLinearMap : (Group a, Module (Complex a) b) => (b -> b -> b) -> Type 
                       f ((r <#> x) <+> (s <#> y)) z = r <#> (f x z) <+> (s <#> (f y z)) ->
                       f z ((r <#> x) <+> (s <#> y)) = (Linear.conjugate r) <#> (f z x) <+> ((Linear.conjugate s) <#> (f z y)) ->
                       SesquiLinearMap f
+
+
+data EigenPair : Module a b => (b -> b) -> b -> a -> Type where
+  IsEigenPair : Module a b => 
+                (f : b -> b) ->
+                (v : b) -> 
+                (r : a) ->
+                f v = r <#> v ->
+                EigenPair f v r
