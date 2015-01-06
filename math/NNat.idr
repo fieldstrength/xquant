@@ -62,8 +62,3 @@ instance Ord NNat where
 
 instance Show NNat where
   show (nS n) = show (S n)
-
-||| Non-empty Vector
-data NVect : NNat -> Type -> Type where
-  vI : (x : a) -> NVect 1 a
-  zS : (x : a) -> NVect (nS k) a -> NVect (nS $ S k) a

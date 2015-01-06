@@ -23,7 +23,7 @@ data ScalarGraph : (n : Nat) ->
            {y : Marks (2*l) j} ->
            (c : Compat x y) ->
            ScalarGraph n l v y ->
-           ScalarGraph n l (S v) (markAdd x y c)
+           ScalarGraph n l (S v) (markAdd c)
 
 ||| The number of external lines is the number of endpoints not connected to vertices
 external : ScalarGraph n p v m -> Nat

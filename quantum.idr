@@ -5,6 +5,7 @@ import graph.Graph
 
 import math.Hilbert
 import math.NNat
+import math.NVect
 import math.Rational
 
 import Spinor
