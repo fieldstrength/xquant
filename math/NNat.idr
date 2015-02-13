@@ -1,6 +1,10 @@
 module NNat
 
+import Data.ZZ
+
+
 %default total
+
 
 ||| Non-zero natural number
 data NNat = nS Nat
@@ -47,6 +51,9 @@ instance Cast NNat Integer where
 
 instance Cast NNat Int where
   cast = cast . nnToNat
+
+instance Cast NNat ZZ where
+  cast (nS n) = Pos (S n)
 
 instance Cast String Nat where
   cast = fromInteger . cast {to=Integer}
