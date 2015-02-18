@@ -45,8 +45,8 @@ instance Ord Fraction where
   compare (Frac a (nS b)) (Frac c (nS d)) = compare (a * (S d)) (c * (S b))
 
 
-numer : Fraction -> Nat
-numer (Frac n d) = n
+num : Fraction -> Nat
+num (Frac n d) = n
 
 denom : Fraction -> NNat
 denom (Frac n d) = d
