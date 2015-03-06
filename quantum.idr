@@ -13,5 +13,3 @@ import math.Tensor
 import Spinor
 import Sigmas
 import SigKets
-import BKS
-
