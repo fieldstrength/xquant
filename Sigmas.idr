@@ -51,7 +51,7 @@ Pi = Sign False True
 M1 : Phase
 M1 = Sign True False
 Mi : Phase
-Mi = Sign True True 
+Mi = Sign True True
 
 
 -- Pauli Data – Capital 'S' for basic sigma operators
@@ -184,7 +184,7 @@ s1Mult (Sig x1 $ sPhase p1) (Sig x2 $ sPhase p2) = case x1 of
 -- Higher Sigma mutiply
 sMult : Sigma n -> Sigma n -> Sigma n
 sMult (sPhase p1)  (sPhase p2)  = sPhase $ p1 <+> p2
-sMult (Sig pl1 s1) (Sig pl2 s2) with (s1Mult (pack pl1) (pack pl2)) 
+sMult (Sig pl1 s1) (Sig pl2 s2) with (s1Mult (pack pl1) (pack pl2))
   | r = Sig (topPauli r) ((getPhase r) * (sMult s1 s2))
   
 -- Infix op for Sigma multiply
@@ -211,6 +211,9 @@ opower : Sigma n -> (m : Nat) -> Sigma (n * m)
 opower s Z     ?=  {Sigma_Power_Lemma_1}  sPhase P1
 opower s (S n) ?=  {Sigma_Power_Lemma_2}  s <&> (opower s n)
 
+negId : (n : Nat) -> Sigma n
+negId Z     = sPhase M1
+negId (S n) = Sig SI $ negId n
 
 
 ---------- Proofs ----------
@@ -225,7 +228,6 @@ Sigma_OTimes_Lemma_2 = proof
   intros
   rewrite sym $ plusSuccRightSucc k (S k1)
   trivial
-
 
 
 Sigma_Power_Lemma_1 = proof

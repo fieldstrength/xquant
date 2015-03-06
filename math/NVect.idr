@@ -1,6 +1,12 @@
 module NVect
 
+import Data.Vect
+
 import math.NNat
+
+
+%default total
+
 
 ||| Non-empty Vector
 data NVect : NNat -> Type -> Type where
@@ -32,3 +38,24 @@ toVect (vS x v) = x :: (toVect v)
 sum : Semigroup a => NVect n a -> a
 sum (vI x)    = x
 sum (vS x xs) = x <+> NVect.sum xs
+
+product : Ring a => NVect n a -> a
+product (vI x)    = x
+product (vS x xs) = x <.> NVect.product xs
+
+last : NVect n a -> a
+last (vI x)   = x
+last (vS x v) = last v
+
+foldl1 : (a -> a -> a) -> NVect n a -> a
+foldl1 f (vI x)     = x
+foldl1 f (vS x v)   = f x $ foldl1 f v
+
+%assert_total
+foldr1 : (a -> a -> a) -> NVect n a -> a
+foldr1 f (vI x)          = x
+foldr1 f (vS y (vI x))   = f y x
+foldr1 f (vS y (vS x v)) = foldr1 f (vS (f y x) v)
+
+{- (++) : NVect n a -> NVect m a -> NVect (n+m) a
+   (++) (vI x) w ?= vS x w -}

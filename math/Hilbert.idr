@@ -5,6 +5,8 @@ import Data.Matrix
 import Data.Complex
 import Data.Floats
 import Data.ZZ
+import Data.Fin
+
 
 infixl 3 <|>
 

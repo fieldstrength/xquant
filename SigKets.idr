@@ -1,11 +1,16 @@
 
 module SigKets
 
+
 import Data.Complex
+import Data.Vect
+import Data.Fin
 import Data.ZZ
 import Data.Matrix
+
 import Sigmas
 import math.Hilbert
+
 
 
 infixl 3 <\>
@@ -29,6 +34,7 @@ instance Eq Spin where
   Down == Down = True
   Up == Down   = False
   Down == Up   = False
+
 
 -- basic spin orientation datatype
 data EigenSpin = Eigenspin Orient Spin
@@ -158,7 +164,7 @@ kGetPhase (kS (Eigenspin o s) x) = kGetPhase x
 -- Higher Sigma acting on abstract multi-qubit states
 ObsKet : Sigma n -> KetSpins n -> KetSpins n
 ObsKet (sPhase p1)  (kPhase p2)  = kPhase $ p1 <+> p2
-ObsKet (Sig pl s) (kS k ks) with (ObsKet1 (pack pl) (kPack k)) 
+ObsKet (Sig pl s) (kS k ks) with (ObsKet1 (pack pl) (kPack k))
   | r = kS (topKetSpin r) (timesPhase (kGetPhase r) (ObsKet s ks))
 
 -- Infix op for Sigma-Ket multiply
@@ -203,7 +209,7 @@ instance Show (KetSpins n) where
 ox : KetSpins n -> KetSpins m -> KetSpins (n + m)
 ox e           (kPhase ph) ?= {Ket_OTimes_Lemma_1} timesPhase ph e
 ox (kPhase ph) e            = timesPhase ph e
-ox (kS e1 es1) (kS e2 es2) ?= {Ket_OTimes_Lemma_2} ox (dropLast $ kS e1 es1) 
+ox (kS e1 es1) (kS e2 es2) ?= {Ket_OTimes_Lemma_2} ox (dropLast $ kS e1 es1)
                                                       (kS (lastSpin $ kS e1 es1) (kS e2 es2)) where
   dropLast : KetSpins (S k) -> KetSpins k
   dropLast (kS e (kPhase ph)) = kPhase ph
@@ -342,7 +348,6 @@ qubitParity (SZ :: ss) = updateAt 2 not $ qubitParity ss
 
 sigPair : (n : Nat) -> List $ Vect 2 (Sigma n)
 sigPair n = [ [s1,s2] | s1 <- (allSigmas n), s2 <- (allSigmas n) ]
-
 
 
 ---------- Proofs ----------

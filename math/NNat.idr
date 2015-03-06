@@ -1,7 +1,7 @@
 module NNat
 
 import Data.ZZ
-
+import Data.Fin
 
 %default total
 
@@ -42,6 +42,10 @@ toNNat : Nat -> NNat
 toNNat Z     = nS Z
 toNNat (S Z) = nS Z
 toNNat (S k) = 1 + (toNNat k)
+
+finType : NNat -> Type
+finType (nS n) = Fin (S $ S n)
+
 
 instance Cast NNat Nat where
   cast = nnToNat

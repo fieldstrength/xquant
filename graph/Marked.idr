@@ -1,6 +1,11 @@
 module Marked
 
+import Data.Fin
+import Data.Vect
+
+
 %default total
+
 
 ||| A set of sites that are either marked (X) or unmarked (O)
 ||| @ n number of sites

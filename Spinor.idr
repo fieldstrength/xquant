@@ -57,7 +57,7 @@ gamma : {k : Nat} ->
 gamma {k} gs = (gPhase k) <#> (applyAll gs) where
   gPhase : Nat -> Complex ZZ
   gPhase Z     = C0
-  gPhase (S n) = Cmi <*> (gPhase n)
+  gPhase (S n) = Cmi <.> (gPhase n)
   applyAll : RingWithUnity t => Vect n (Matrix m m t) -> Matrix m m t
   applyAll [m]              = m
   applyAll (m :: (h :: ms)) = applyAll ((m <> h) :: ms)
@@ -87,7 +87,7 @@ D2_anticommRelation_11 : g1 >><< g1 = (Pos 2 :+ 0) <#> Id
 D2_anticommRelation_11 = Refl
 
 
-{-  need to prove: 
+{-  should prove: 
 otimesMultiLinearLeft : VerifiedRing a => {s : a} -> 
                                           {u : Matrix n m a} -> 
                                           {v : Matrix j k a} ->
@@ -96,8 +96,8 @@ otimesMultiLinearLeft : VerifiedRing a => {s : a} ->
 otimesMultiLinearRight : VerifiedRing a => {s : a} -> 
                                            {u : Matrix n m a} -> 
                                            {v : Matrix j k a} ->
-                                           (s <#> u) <&> v = u <&> (s <#> v)
---}
+                                           (s <#> u) <&> v = u <&> (s <#> v)   --}
+
 
 ---------- Proofs ----------
 
