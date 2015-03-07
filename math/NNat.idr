@@ -3,6 +3,7 @@ module NNat
 import Data.ZZ
 import Data.Fin
 
+
 %default total
 
 
