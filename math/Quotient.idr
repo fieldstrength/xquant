@@ -14,7 +14,7 @@ infixl 4 ~=
 |||
 ||| proj . proj = proj
 |||
-class Eq a => Quotient a where
+class Quotient a where
   proj : a -> a
 
 ||| Equality test under quotient projection
