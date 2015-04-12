@@ -21,10 +21,6 @@ class Quotient a where
 (~~) : (Eq a, Quotient a) => a -> a -> Bool
 (~~) x y = (proj x) == (proj y)
 
-class Quotient a => VerifiedQuotient a where
-  projIdempotent : proj . proj = proj
-
-
 ---- Quotient counterpart to the (=) data type ----
 
 data (~=) : (x,y : a) -> Type where

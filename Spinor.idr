@@ -1,6 +1,7 @@
 
 module Spinor
 
+import Control.Algebra
 import Data.Complex
 import Data.ZZ
 import Data.Matrix

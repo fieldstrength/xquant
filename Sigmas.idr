@@ -1,6 +1,7 @@
 
 module Sigmas
 
+import Control.Algebra
 
 infixr 5 <>
 infixr 7 <&>

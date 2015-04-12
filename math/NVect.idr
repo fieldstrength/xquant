@@ -1,5 +1,6 @@
 module NVect
 
+import Control.Algebra
 import Data.Vect
 
 import math.NNat

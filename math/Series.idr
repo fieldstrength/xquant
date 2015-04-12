@@ -1,5 +1,6 @@
 module Series
 
+import Control.Algebra
 import Data.Vect
 
 import math.NNat

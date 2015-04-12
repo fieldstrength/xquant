@@ -1,7 +1,7 @@
 
 module SigKets
 
-
+import Control.Algebra
 import Data.Complex
 import Data.Vect
 import Data.Fin

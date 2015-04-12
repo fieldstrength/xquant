@@ -1,6 +1,7 @@
 
 module Hilbert
 
+import Control.Algebra
 import Data.Matrix
 import Data.Complex
 import Data.Floats

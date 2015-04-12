@@ -1,5 +1,6 @@
 module Rational
 
+import Control.Algebra
 import Data.ZZ
 
 import math.Quotient

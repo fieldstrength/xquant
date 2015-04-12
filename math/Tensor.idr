@@ -1,5 +1,6 @@
 module Tensor
 
+import Control.Algebra
 import Data.Vect
 import Data.Fin
 import Data.Matrix

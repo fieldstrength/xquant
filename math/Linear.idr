@@ -1,5 +1,6 @@
 module Linear
 
+import Control.Algebra
 import Data.Complex
 import Data.Matrix
 
@@ -8,12 +9,12 @@ data Linear : Semigroup a => (a -> a) -> Type where
              f (x <+> y) = f x <+> (f y) ->
              Linear f
 
-
+{-
 data LinearMap : Module a b => (b -> b) -> Type where
   IsLinearMap : Module a b => 
                 (f : b -> b) -> 
                 f ((r <#> x) <+> (s <#> y)) = r <#> (f x) <+> (s <#> (f y)) ->
-                LinearMap f
+                LinearMap f -}
 
 
 ||| Complex conjugate
