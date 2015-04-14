@@ -1,7 +1,7 @@
-
 module SigKets
 
 import Control.Algebra
+import Control.Algebra.VectorSpace
 import Data.Complex
 import Data.Vect
 import Data.Fin
@@ -11,13 +11,12 @@ import Data.Matrix
 import Sigmas
 import math.Hilbert
 
-
-
 infixl 3 <\>
 infixl 3 <|>
 infixr 4 </>
 infixr 7 <&>
 
+%default total
 
 -------------------------------------------------------------------------------------------
 --                                     State Data
@@ -34,7 +33,6 @@ instance Eq Spin where
   Down == Down = True
   Up == Down   = False
   Down == Up   = False
-
 
 -- basic spin orientation datatype
 data EigenSpin = Eigenspin Orient Spin
@@ -83,7 +81,6 @@ instance LaTeX EigenSpin where
 instance Show EigenSpin where
   show (Eigenspin o s) = (show o) ++ "-" ++ (show s)
   
-
 -- EigenSpin shorthands
 upX : EigenSpin
 upX = Eigenspin X Up
@@ -115,7 +112,6 @@ uZ = upZ
 dZ : EigenSpin
 dZ = downZ
 
-
 -- Single abstract sigma acting on ket
 ObsKet1 : Sigma 1 -> KetSpins 1 -> KetSpins 1
 ObsKet1 (Sig SI $ sPhase p1) (kS (Eigenspin o ud)   (kPhase p2)) = kS (Eigenspin o ud)   (kPhase $ p1 <+> p2)
@@ -138,7 +134,6 @@ ObsKet1 (Sig SZ $ sPhase p1) (kS (Eigenspin Y Down) (kPhase p2)) = kS (Eigenspin
 ObsKet1 (Sig SZ $ sPhase p1) (kS (Eigenspin Z Up)   (kPhase p2)) = kS (Eigenspin Z Up)   (kPhase $ p1 <+> p2)
 ObsKet1 (Sig SZ $ sPhase p1) (kS (Eigenspin Z Down) (kPhase p2)) = kS (Eigenspin Z Down) (kPhase $ p1 <+> p2 <+> M1)
 
-
 timesPhase : Phase -> KetSpins n -> KetSpins n
 timesPhase p1 (kPhase p2) = kPhase (p1 <+> p2)
 timesPhase p1 (kS e es)   = kS e (timesPhase p1 es)
@@ -160,7 +155,6 @@ kGetPhase : KetSpins n -> Phase
 kGetPhase (kPhase p)             = p
 kGetPhase (kS (Eigenspin o s) x) = kGetPhase x
 
-
 -- Higher Sigma acting on abstract multi-qubit states
 ObsKet : Sigma n -> KetSpins n -> KetSpins n
 ObsKet (sPhase p1)  (kPhase p2)  = kPhase $ p1 <+> p2
@@ -178,7 +172,6 @@ ObsKet (Sig pl s) (kS k ks) with (ObsKet1 (pack pl) (kPack k))
 -- Another alias for Bra-Sigma multiply, for maximal harmony with written convention
 (<|>) : BraSpins n -> Sigma n -> BraSpins n
 (<|>) = (<\>)
-
 
 -- LaTeX printing, generic show for multiple qubits
 instance LaTeX (KetSpins n) where
@@ -202,8 +195,6 @@ instance Show (KetSpins n) where
     Prefix : KetSpins n -> String
     Prefix (kPhase (Sign a b)) = (if a then "-" else "") ++ (if b then "i " else "")
     Prefix (kS p s)            = Prefix s
-
-
 
 -- tensor product for abstract multi-qubit kets
 ox : KetSpins n -> KetSpins m -> KetSpins (n + m)

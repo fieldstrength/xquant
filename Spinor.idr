@@ -1,4 +1,3 @@
-
 module Spinor
 
 import Control.Algebra
@@ -6,6 +5,7 @@ import Data.Complex
 import Data.ZZ
 import Data.Matrix
 import math.Hilbert
+import EvenOdd
 
 %default total
 
@@ -52,24 +52,15 @@ gammaEven (S k) ?= {Lemma_1} map (\g => g <&> (g1 <> g0)) (gammaEven k) ++ [Id <
 ||| Γ = i^{–k} (Γ^0 ... Γ^{D-1})
 |||
 ||| forms an odd-dimensional (irriducible) spinor representation by adding to the appropriate (gammaEven k)
-gamma : {k : Nat} -> 
-        Vect (k*2+2) $ Matrix (power 2 $ S k) (power 2 $ S k) (Complex ZZ) -> 
-        Matrix (power 2 $ S k) (power 2 $ S k) (Complex ZZ) 
-gamma {k} gs = (gPhase k) <#> (applyAll gs) where
-  gPhase : Nat -> Complex ZZ
-  gPhase Z     = C0
-  gPhase (S n) = Cmi <.> (gPhase n)
-  applyAll : RingWithUnity t => Vect n (Matrix m m t) -> Matrix m m t
-  applyAll [m]              = m
-  applyAll (m :: (h :: ms)) = applyAll ((m <> h) :: ms)
-  applyAll Nil              = Id  -- this here to satisfy totality check
+gamma : Vect (k*2+2) $ Matrix (power 2 $ S k) (power 2 $ S k) (Complex ZZ) ->
+        Matrix (power 2 $ S k) (power 2 $ S k) (Complex ZZ)
+gamma {k} gs = (power' Cmi k) <#> (product' gs)
 
 {- Γ has eigenvalues of ±1 and satisfies:
 
      Γ^2 = 1
      {Γ,Γ^μ} = 0
      [Γ,Σ^{μν}] = 0  -}
-
 
 ||| Anticommutation relation, {Γμ,Γν} = 2 η{μν} Id, for D = 2
 D2_anticommRelation_00 : g0 >><< g0 = (NegS 1 :+ 0) <#> Id
@@ -87,7 +78,6 @@ D2_anticommRelation_10 = Refl
 D2_anticommRelation_11 : g1 >><< g1 = (Pos 2 :+ 0) <#> Id
 D2_anticommRelation_11 = Refl
 
-
 {-  should prove: 
 otimesMultiLinearLeft : VerifiedRing a => {s : a} -> 
                                           {u : Matrix n m a} -> 
@@ -99,17 +89,14 @@ otimesMultiLinearRight : VerifiedRing a => {s : a} ->
                                            {v : Matrix j k a} ->
                                            (s <#> u) <&> v = u <&> (s <#> v)   --}
 
-
 ---------- Proofs ----------
 
-total 
 multTwoRightPlusTimesOne : (n : Nat) -> mult n 2 = n + (mult n 1)
 multTwoRightPlusTimesOne = proof
   intros
   rewrite (multRightSuccPlus n (S Z))
   trivial
 
-total 
 multTwoRightPlus : (n : Nat) -> n * 2 = plus n n
 multTwoRightPlus = proof
   intros
@@ -117,14 +104,13 @@ multTwoRightPlus = proof
   rewrite (sym $ multOneRightNeutral n)
   trivial
 
-total 
 plusPlusZero : (x,y : Nat) -> x + y = x + (y + 0)
 plusPlusZero = proof
   intros
   rewrite (sym $ plusZeroRightNeutral y)
   trivial
 
-Spinor.Lemma_1 = proof
+Lemma_1 = proof
   intros
   rewrite (plusZeroRightNeutral (plus (mult k 2) 2))
   rewrite (sym $ plusSuccRightSucc (plus (mult k 2) 2) 0)
