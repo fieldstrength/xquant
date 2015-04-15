@@ -73,10 +73,6 @@ instance Show Orient where
 instance Show Spin where
   show Up   = "Up"
   show Down = "Dn"
-
-instance LaTeX EigenSpin where
-  TeX (Eigenspin o Up)   = "\\uparrow_"   ++ (toLower $ show o)
-  TeX (Eigenspin o Down) = "\\downarrow_" ++ (toLower $ show o)
   
 instance Show EigenSpin where
   show (Eigenspin o s) = (show o) ++ "-" ++ (show s)
@@ -172,18 +168,6 @@ ObsKet (Sig pl s) (kS k ks) with (ObsKet1 (pack pl) (kPack k))
 -- Another alias for Bra-Sigma multiply, for maximal harmony with written convention
 (<|>) : BraSpins n -> Sigma n -> BraSpins n
 (<|>) = (<\>)
-
--- LaTeX printing, generic show for multiple qubits
-instance LaTeX (KetSpins n) where
-  TeX (kPhase $ Sign a b) = (if a then "-" else "") ++ (if b then "i" else "1")
-  TeX s                   = (Prefix s) ++ (suffix s) where
-    suffix : KetSpins n -> String
-    suffix (kPhase ph)        = ""
-    suffix (kS p (kPhase ph)) = TeX p
-    suffix (kS p s)           = (TeX p) ++ " \\otimes " ++ (suffix s)
-    Prefix : KetSpins n -> String
-    Prefix (kPhase (Sign a b)) = (if a then "-" else "") ++ (if b then "i " else " ")
-    Prefix (kS p s)            = Prefix s
 
 instance Show (KetSpins n) where
   show (kPhase phase) = show phase

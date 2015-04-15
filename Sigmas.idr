@@ -70,34 +70,12 @@ instance Eq Pauli where
   SY == SY = True
   SZ == SZ = True
   _  == _  = False
-
-class LaTeX a where
-  TeX : a -> String
-
-instance LaTeX Pauli where
-  TeX SI = "\\mathbb{I}"
-  TeX SX = "\\sigma_x"
-  TeX SY = "\\sigma_y"
-  TeX SZ = "\\sigma_z"
   
   
 -- Higher Sigma operator datatype, indexed by Nat
 data Sigma : Nat -> Type where
   sPhase : Phase -> Sigma Z
   Sig    : Pauli -> Sigma k -> Sigma (S k)
-
-
--- LaTeX printing, generic show for higher Sigmas
-instance LaTeX (Sigma n) where
-  TeX (sPhase $ Sign a b) = (if a then "-" else "") ++ (if b then "i" else "1")
-  TeX s                   = (Prefix s) ++ (suffix s) where
-    suffix : Sigma n -> String
-    suffix (sPhase ph)         = ""
-    suffix (Sig p (sPhase ph)) = TeX p
-    suffix (Sig p s)           = (TeX p) ++ " \\otimes " ++ (suffix s)
-    Prefix : Sigma n -> String
-    Prefix (sPhase (Sign a b)) = (if a then "-" else "") ++ (if b then "i " else " ")
-    Prefix (Sig p s)           = Prefix s
 
 instance Show (Sigma n) where
   show (sPhase phase) = show phase
