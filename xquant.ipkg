@@ -1,0 +1,23 @@
+package xquant
+
+sourcedir = src
+
+modules = xquant,
+          xquant.Base,
+          xquant.Graph.Marked,
+          xquant.Graph.Feynman,
+          xquant.Math.Set,
+          xquant.Math.Hilbert,
+          xquant.Spinor.Gamma,
+          xquant.Spinor.Sigmas,
+          xquant.Spinor.SigKets,
+          xquant.Spinor.BKS,
+
+          Data.Matrix,
+          Data.Matrix.Algebraic,
+          Data.Matrix.Numeric,
+          Control.Algebra,
+          Control.Algebra.VectorSpace,
+          Control.Algebra.NumericInstances
+
+opts = "--no-tactic-deprecation-warnings"

@@ -1,13 +1,26 @@
-quantum
+xquant [![Build Status](https://travis-ci.org/BlackBrane/xquant.svg?branch=master)](https://travis-ci.org/BlackBrane/xquant)
 =======
 
-Dependently-typed structures for quantum physics in Idris
+Relativity and quantum mechanics. Dependently-typed structures for physics in Idris.
 
-This is a set of Idris libraries I'm developing for a variety of tasks related to quantum physics. Most of them are directly relevant for the main program (in development) that's intended to perform basic simulations and calcuations of quantum systems, both infinite and finite-dimensional. Some parts are more tangentially related and may be factored out to independent projects.
+![Feynman Propagator](propagator.jpg)
 
-This requires Idris 0.9.17 or current HEAD.
+<font size="1">_Feynman propagator with mass 20. [(Cyp)](https://commons.wikimedia.org/wiki/File:FeynmanPropagatorWithMass20.jpg)_</font>
 
 ---
+
+A set of Idris libraries for relativity and quantum physics, exploring library design for
+physical computations in the presence of full dependent types.
+
+Much of the functionality is not sufficiently performant for serious work, which could be addressed
+by interfacing with another runtime. For now the library is to be considered a prototype.
+
+Idris v0.19 at least is probably required.
+
+---
+
+_Notes on a few constituent modules._
+
 
 #### Sigmas
 Data types representing the quantum operators of the _n_-qubit state space, and functions on them, especially implementing their algebra.
@@ -15,20 +28,17 @@ Data types representing the quantum operators of the _n_-qubit state space, and 
 #### SigKets
 Data types for _n_-qubit state vectors, and functions involving both vectors and operators. In particular, we can calculate outcome probabilities and expectation values for any observables.
 
-#### Spinor
+#### Gamma
 Writing down a field theory for fermions requires a representation of the gamma matrix algebra. In even dimensions _(d = 2k + 2)_ this is a set of _d_ square matrixes with size _2^(k+1)_. The next odd-dimensional representation is formed by adding an additional matrix of the same size, corresponding to the product of all the others. We implement functions to recursively define gamma matrices of arbitrary dimension starting with _d = 2_. These numerical properties are enforced by the type system.
 
 #### Marked
 Data type `Marks` representing the number of ways to choose _n_ objects from a set of _m_, along with related functions and proofs. Used to make `ScalarGraph`s.
 
-#### Graph
+#### Feynman
 Data type for correct-by-construction Feynman graph topologies with a fixed interaction order, i.e. a fixed number of line-endpoints connected to each vertex.
 
-#### Hilbert
-Various basic functions and type-level functions for quantum systems.
+#### Helicity
+Various constructions needed for the spinor helicity formalism for scattering amplitudes in quantum field theory.
 
-#### NNat
-Data type for nonzero natural numbers, which are needed/helpful for defining `Rational` among other things. Basic functions and typeclass instances are provided. They're built from a standard `Nat` to take advantage of its special optimization.
-
-#### Rational
-Data type for rational numbers, using the Idris base library integer `ZZ` for a numerator and a `NNat` as a denominator. We define the `Quotient` class for data types that are interpreted as being defined _up to an equivalence class_, and instantiate `Rational` under this class. There's also a data type for positive rationals, called `Fraction`.
+#### Spectrum
+Type-safe representations of quantum energy spectra and basis vectors, with cardinalities and degeneracies specified at the type level. Separate types for finite versus infinite dimensional systems.

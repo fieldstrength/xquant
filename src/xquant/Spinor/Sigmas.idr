@@ -1,7 +1,6 @@
+module xquant.Spinor.Sigmas
 
-module Sigmas
-
-import Control.Algebra
+import public Control.Algebra
 
 infixr 5 <>
 infixr 7 <&>
@@ -9,7 +8,7 @@ infixr 7 <&>
 -------------------------------------------------------------------------------------------
 --           Data for Sigma Operators  • Complex signs (Phases)
 --                                     • Pauli operators
---                                     • Higher Sigma operators 
+--                                     • Higher Sigma operators
 --                                        (tensor products of Paulis with an overall phase)
 -------------------------------------------------------------------------------------------
 
@@ -26,7 +25,7 @@ instance Show Phase where
 
 instance Eq Phase where
   (==) (Sign m1 i1) (Sign m2 i2) = (m1 == m2) && (i1 == i2)
-  
+
 
 -- Exclusive OR
 xor : Bool -> Bool -> Bool
@@ -40,7 +39,7 @@ instance Monoid Phase where
 
 instance Group Phase where
   inverse (Sign a b) = Sign (xor a b) b
-  
+
 star : Phase -> Phase
 star (Sign a b) = Sign a (not b)
 
@@ -58,7 +57,7 @@ Mi = Sign True True
 -- Pauli Data – Capital 'S' for basic sigma operators
 data Pauli = SI | SX | SY | SZ
 
-instance Show Pauli where 
+instance Show Pauli where
   show SI = "I"
   show SX = "x"
   show SY = "y"
@@ -70,8 +69,8 @@ instance Eq Pauli where
   SY == SY = True
   SZ == SZ = True
   _  == _  = False
-  
-  
+
+
 -- Higher Sigma operator datatype, indexed by Nat
 data Sigma : Nat -> Type where
   sPhase : Phase -> Sigma Z
@@ -105,7 +104,7 @@ sI = Sig SI $ sPhase P1
 
 -------------------------------------------------------------------------------------------
 --           Operations with Sigmas   • Helper functions: getPhase, topPauli, lastPauli, pack
---                                    • Scalar multiply 
+--                                    • Scalar multiply
 --                                    • (Single) Sigma multiply
 --                                    • (Higher) Sigma multiply
 -------------------------------------------------------------------------------------------
@@ -139,7 +138,7 @@ xSigPhase.(*) s p = p * s
 s1Mult : Sigma 1 -> Sigma 1 -> Sigma 1
 s1Mult (Sig x1 $ sPhase p1) (Sig x2 $ sPhase p2) = case x1 of
                                                         SX => case x2 of
-                                                                   SX => Sig SI (sPhase $ p1 <+> p2) 
+                                                                   SX => Sig SI (sPhase $ p1 <+> p2)
                                                                    SY => Sig SZ (sPhase $ p1 <+> p2 <+> Pi)
                                                                    SZ => Sig SY (sPhase $ p1 <+> p2 <+> Mi)
                                                                    SI => Sig SX (sPhase $ p1 <+> p2)
@@ -164,8 +163,8 @@ s1Mult (Sig x1 $ sPhase p1) (Sig x2 $ sPhase p2) = case x1 of
 sMult : Sigma n -> Sigma n -> Sigma n
 sMult (sPhase p1)  (sPhase p2)  = sPhase $ p1 <+> p2
 sMult (Sig pl1 s1) (Sig pl2 s2) with (s1Mult (pack pl1) (pack pl2))
-  | r = Sig (topPauli r) ((getPhase r) * (sMult s1 s2))
-  
+  sMult (Sig pl1 s1) (Sig pl2 s2) | r = Sig (topPauli r) ((getPhase r) * (sMult s1 s2))
+
 -- Infix op for Sigma multiply
 (<>) : Sigma n -> Sigma n -> Sigma n
 (<>) = sMult
@@ -218,4 +217,3 @@ Sigma_Power_Lemma_2 = proof
   intros
   rewrite (sym $ multRightSuccPlus n n1)
   trivial
-

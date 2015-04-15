@@ -1,13 +1,14 @@
-module Data.Matrix
+||| Matrix operations with vector space dimensionalities enforced
+||| at the type level. Uses operations from classes in `Control.Algebra`
+||| and `Control.Algebra.VectorSpace`.
+module Data.Matrix.Algebraic
 
 import public Control.Algebra
 import public Control.Algebra.VectorSpace
 import public Control.Algebra.NumericInstances
 
-import Data.Complex
-import Data.ZZ
-import Data.Fin
-import Data.Vect
+import public Data.Matrix
+
 
 %default total
 
@@ -26,10 +27,10 @@ infixr 7 <&>  -- matrix tensor product
 -----------------------------------------------------------------------
 
 instance Semigroup a => Semigroup (Vect n a) where
-  (<+>) v w = zipWith (<+>) v w
+  (<+>)= zipWith (<+>)
 
 instance Monoid a => Monoid (Vect n a) where
-  neutral {n} = replicate n neutral
+  neutral = replicate _ neutral
 
 instance Group a => Group (Vect n a) where
   inverse = map inverse
@@ -37,20 +38,20 @@ instance Group a => Group (Vect n a) where
 instance AbelianGroup a => AbelianGroup (Vect n a) where {}
 
 instance Ring a => Ring (Vect n a) where
-  (<.>) v w = zipWith (<.>) v w
+  (<.>) = zipWith (<.>)
 
 instance RingWithUnity a => RingWithUnity (Vect n a) where
-  unity {n} = replicate n unity
+  unity = replicate _ unity
 
 instance RingWithUnity a => Module a (Vect n a) where
-  (<#>) r v = map (r <.>) v
+  (<#>) r = map (r <.>)
 
 instance RingWithUnity a => Module a (Vect n (Vect l a)) where
-  (<#>) r m = map (r <#>) m
+  (<#>) r = map (r <#>)
 -- should be Module a b => Module a (Vect n b), but results in 'overlapping instance'
 
 -----------------------------------------------------------------------
---                       (Ring) Vector functions
+--                        (Ring) Vector functions
 -----------------------------------------------------------------------
 
 ||| Inner product of ring vectors
@@ -66,28 +67,12 @@ instance RingWithUnity a => Module a (Vect n (Vect l a)) where
   oextend n w = concat $ map (replicate n) w
 
 ||| Standard basis vector with one nonzero entry, ring data type and vector-length unfixed
-basis : RingWithUnity a => {d : Nat} -> (Fin d) -> Vect d a
-basis i = replaceAt i unity $ neutral
+basis : RingWithUnity a => (Fin d) -> Vect d a
+basis i = replaceAt i unity neutral
 
 -----------------------------------------------------------------------
---                          Matrix functions
+--                         Ring Matrix functions
 -----------------------------------------------------------------------
-
-||| Matrix with n rows and m columns
-Matrix : Nat -> Nat -> Type -> Type
-Matrix n m a = Vect n (Vect m a)
-
-||| Gets the specified column of a matrix. For rows use the vector function 'index'
-getCol : Fin m -> Matrix n m a -> Vect n a
-getCol fm q = map (index fm) q
-
-||| Deletes the specified column of a matrix. For rows use the vector function 'deleteAt'
-deleteCol : Fin (S m) -> Matrix n (S m) a -> Matrix n m a
-deleteCol f m = map (deleteAt f) m
-
-||| Matrix element at specified row and column indices
-indices : Fin n -> Fin m -> Matrix n m a -> a
-indices f1 f2 m = index f2 (index f1 m)
 
 ||| Matrix times a column vector
 (</>) : Ring a => Matrix n m a -> Vect m a -> Vect n a
@@ -95,7 +80,7 @@ indices f1 f2 m = index f2 (index f1 m)
 
 ||| Matrix times a row vector
 (<\>) : Ring a => Vect n a -> Matrix n m a -> Vect m a
-(<\>) r m = map (r <:>) $ transpose m
+(<\>) r = map (r <:>) . transpose
 
 ||| Matrix multiplication
 (<>) : Ring a => Matrix n k a ->
@@ -109,28 +94,11 @@ indices f1 f2 m = index f2 (index f1 m)
   stepOne : Matrix h1 w1 a -> Matrix h2 w2 a -> Matrix (h1 * h2) w1 a
   stepOne {h2} m1 m2 = concat $ map (replicate h2) m1
   stepTwo : Matrix h1 w1 a -> Matrix h2 w2 a -> Matrix (h1 * h2) w2 a
-  stepTwo {h1} m1 m2 = concat $ (Vect.replicate h1) m2
-
-||| Cast a vector from a standard Vect to a proper n x 1 matrix
-col : Vect n a -> Matrix n 1 a
-col v = map (\x => [x]) v
-
-||| Cast a row from a standard Vect to a proper 1 x n matrix
-row : Vect n a -> Matrix 1 n a
-row r = [r]
+  stepTwo {h1} m1 m2 = concat $ replicate h1 m2
 
 ||| Outer product between ring vectors
 (><) : Ring a => Vect n a -> Vect m a -> Matrix n m a
-(><) x y = (col x) <> (row y)
-
-||| All finite numbers up to the given bound
-allN : (n : Nat) -> Vect n (Fin n)
-allN Z     = Nil
-allN (S n) = FZ :: (map FS $ allN n)
-
-||| Identity matrix
-Id : RingWithUnity a => {d : Nat} -> Matrix d d a
-Id {d} = map (\n => basis n) $ allN d
+(><) x y = col x <> row y
 
 ||| Matrix commutator
 (<<>>) : Ring a => Matrix n n a -> Matrix n n a -> Matrix n n a
@@ -140,9 +108,42 @@ Id {d} = map (\n => basis n) $ allN d
 (>><<) : Ring a => Matrix n n a -> Matrix n n a -> Matrix n n a
 (>><<) m1 m2 = (m1 <> m2) <+> (m2 <> m1)
 
+||| Identity matrix
+Id : RingWithUnity a => Matrix d d a
+Id = map (\n => basis n) (fins _)
+
+||| Square matrix from diagonal elements
+diag_ : Monoid a => Vect n a -> Matrix n n a
+diag_ = zipWith (\f => \x => replaceAt f x neutral) (fins _)
+
+||| Combine two matrices to make a new matrix in block diagonal form
+blockDiag : Monoid a => Matrix n n a -> Matrix m m a -> Matrix (n+m) (n+m) a
+blockDiag g h = map (++ replicate _ neutral) g ++ map ((replicate _ neutral) ++) h
+
+
+-----------------------------------------------------------------------
+--                           Determinants
+-----------------------------------------------------------------------
+
+||| Alternating sum
+altSum : Group a => Vect n a -> a
+altSum (x::y::zs) = (x <-> y) <+> altSum zs
+altSum [x]        = x
+altSum []         = neutral
+
+||| Determinant of a 2-by-2 matrix
+det2 : Ring a => Matrix 2 2 a -> a
+det2 [[x1,x2],[y1,y2]] = x1 <.> y2 <-> x2 <.> y1
+
+||| Determinant of a square matrix
+det : Ring a => Matrix (S (S n)) (S (S n)) a -> a
+det {n} m = case n of
+  Z     => det2 m
+  (S k) => altSum . map (\c => indices FZ c m <.> det (subMatrix FZ c m))
+         $ fins (S (S (S k)))
+
 -----------------------------------------------------------------------
 --                      Matrix Algebra Properties
 -----------------------------------------------------------------------
 
 -- TODO: Prove properties of matrix algebra for 'Verified' algebraic classes
-

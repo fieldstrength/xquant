@@ -1,26 +1,23 @@
-module Spinor
+module xquant.Spinor.Gamma
 
-import Control.Algebra
-import Data.Complex
-import Data.ZZ
-import Data.Matrix
-import math.Hilbert
-import EvenOdd
+import xquant.Core.Types
+import public Data.Matrix.Algebraic
+import public Control.Algebra.NumericInstances
+import public Data.Complex
 
 %default total
 
 -- Begin with two primative Gamma matrices, Γ0 and Γ1, generating Spin(2)
--- We define them 'symbolically' with Complex ZZ data type.
 
 |||  Γ0 = iσy
-g0 : Matrix 2 2 (Complex ZZ)
-g0 = [[C0, C1], [Cm1, C0]]
+g0 : Matrix 2 2 (Complex Integer)
+g0 = [[c0, c1], [m1, c0]]
 
 |||  Γ1 = σx
-g1 : Matrix 2 2 (Complex ZZ)
-g1 = [[C0, C1], [C1, C0]]
+g1 : Matrix 2 2 (Complex Integer)
+g1 = [[c0, c1], [c1, c0]]
 
-{- Construct gammas for even-dimensional spinor representations (D = 2k + 2) 
+{- Construct gammas for even-dimensional spinor representations (D = 2k + 2)
    First tensor as follows:
 
       G^μ    = Γ^mu <&> diag(-1,1),  (where mu <- [0..D-2])  or equivalently,
@@ -32,17 +29,17 @@ g1 = [[C0, C1], [C1, C0]]
       G^D     = Id <&> -iΓ0  = Id ⊗ σy  -}
 
 |||  Gamma matrices for even dimensions D = 2k + 2, with size 2^(k+1)
-gammaEven : (k : Nat) -> Vect (k*2 + 2) $ Matrix (power 2 (S k)) (power 2 (S k)) (Complex ZZ)
+gammaEven : (k : Nat) -> Vect (k*2 + 2) $ Matrix (power 2 (S k)) (power 2 (S k)) (Complex Integer)
 gammaEven Z      = [g0, g1]
-gammaEven (S k) ?= {Lemma_1} map (\g => g <&> (g1 <> g0)) (gammaEven k) ++ [Id <&> g1, Cmi <#> Id <&> g0]
+gammaEven (S k) ?= {Lemma_1} map (\g => g <&> (g1 <> g0)) (gammaEven k) ++ [Id <&> g1, mi <#> Id <&> g0]
 
 {- Matrices defined in this way satisy the gamma matrix algebra:
 
      {Γμ,Γν} = 2 η{μν} Id   (upstairs indices)
 
-   They also furnish Poincaré generators   Σ^{μν} = −i[Γ^μ,Γ^ν] 
-   satisfying, by definition:   i[Σμν,Σσρ] = ηνσΣμρ + ημρΣνσ − ηνρΣμσ − ημσΣνρ 
- 
+   They also furnish Poincaré generators   Σ^{μν} = −i[Γ^μ,Γ^ν]
+   satisfying, by definition:   i[Σμν,Σσρ] = ηνσΣμρ + ημρΣνσ − ηνρΣμσ − ημσΣνρ
+
    This holds in any dimensionality and in both Minkowski and Euclidean signatures.
 
    Now define the "fifth Gamma Matrix", denoted Γ  -}
@@ -52,9 +49,9 @@ gammaEven (S k) ?= {Lemma_1} map (\g => g <&> (g1 <> g0)) (gammaEven k) ++ [Id <
 ||| Γ = i^{–k} (Γ^0 ... Γ^{D-1})
 |||
 ||| forms an odd-dimensional (irriducible) spinor representation by adding to the appropriate (gammaEven k)
-gamma : Vect (k*2+2) $ Matrix (power 2 $ S k) (power 2 $ S k) (Complex ZZ) ->
-        Matrix (power 2 $ S k) (power 2 $ S k) (Complex ZZ)
-gamma {k} gs = (power' Cmi k) <#> (product' gs)
+gamma : Vect (k*2+2) $ Matrix (power 2 $ S k) (power 2 $ S k) (Complex Integer) ->
+        Matrix (power 2 $ S k) (power 2 $ S k) (Complex Integer)
+gamma {k} gs = (pow' mi k) <#> (product' gs)
 
 {- Γ has eigenvalues of ±1 and satisfies:
 
@@ -62,8 +59,12 @@ gamma {k} gs = (power' Cmi k) <#> (product' gs)
      {Γ,Γ^μ} = 0
      [Γ,Σ^{μν}] = 0  -}
 
+g3 : Matrix 2 2 (Complex Integer)
+g3 = product' $ with List [g0,g1]
+
+{-
 ||| Anticommutation relation, {Γμ,Γν} = 2 η{μν} Id, for D = 2
-D2_anticommRelation_00 : g0 >><< g0 = (NegS 1 :+ 0) <#> Id
+D2_anticommRelation_00 : (g0 >><< g0) = ((-2 :+ 0) <#> Id)
 D2_anticommRelation_00 = Refl
 
 ||| Anticommutation relation, {Γμ,Γν} = 2 η{μν} Id, for D = 2
@@ -75,19 +76,9 @@ D2_anticommRelation_10 : g1 >><< g0 = [neutral, neutral]
 D2_anticommRelation_10 = Refl
 
 ||| Anticommutation relation, {Γμ,Γν} = 2 η{μν} Id, for D = 2
-D2_anticommRelation_11 : g1 >><< g1 = (Pos 2 :+ 0) <#> Id
+D2_anticommRelation_11 : g1 >><< g1 = (2 :+ 0) <#> Id
 D2_anticommRelation_11 = Refl
-
-{-  should prove: 
-otimesMultiLinearLeft : VerifiedRing a => {s : a} -> 
-                                          {u : Matrix n m a} -> 
-                                          {v : Matrix j k a} ->
-                                          (s <#> u) <&> v = u <&> (s <#> v)
-
-otimesMultiLinearRight : VerifiedRing a => {s : a} -> 
-                                           {u : Matrix n m a} -> 
-                                           {v : Matrix j k a} ->
-                                           (s <#> u) <&> v = u <&> (s <#> v)   --}
+-}
 
 ---------- Proofs ----------
 
